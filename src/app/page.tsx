@@ -1,11 +1,17 @@
 'use client'
 import { ThemeModeToggle } from "@/components/ThemeModeToggle";
 import { WalletAddressForm } from "@/components/WalletAddressForm";
+import { deriveFeeVault } from "@/lib/Web3";
 //import { useState } from "react";
 //import Image from "next/image";
 
 export default function Home() {
-  //const [walletStats, setWalletStats] = useState(null);
+
+
+  const vault = deriveFeeVault();
+
+  //console.log(vaultAddress.toBase58());
+  console.log(vault.toBase58());
 
   const handleAddressSubmit = async (address: string) => {
 
