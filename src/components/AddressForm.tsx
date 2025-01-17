@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { PublicKey } from '@solana/web3.js';
 import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 const isSolanaAddress = (address: string) => {
     try {
-        const pubKey = new PublicKey(address);
-        return PublicKey.isOnCurve(pubKey);
+
+        return address.length >= 32 && address.length <= 44;
+
     } catch {
         return false;
     }
@@ -27,7 +27,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function WalletAddressForm({ onSubmit }: { onSubmit: (address: string) => void }) {
+export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) => void; label?: string }) {
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -50,7 +50,7 @@ export function WalletAddressForm({ onSubmit }: { onSubmit: (address: string) =>
                         <FormItem>
                             <FormControl>
                                 <Input
-                                    placeholder="Enter Solana address"
+                                    placeholder={`Enter ${label} address`}
                                     {...field}
                                 />
                             </FormControl>
