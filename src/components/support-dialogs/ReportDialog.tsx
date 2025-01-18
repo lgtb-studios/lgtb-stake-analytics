@@ -46,7 +46,7 @@ export function ReportDialog() {
 
     function onSubmit(data: ReportFormValues) {
         console.log(data)
-        // Handle form submission
+        // Handle form submission, figure out where to send the data
     }
     return (
         <DialogContent className="sm:max-w-[425px]">

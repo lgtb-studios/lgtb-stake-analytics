@@ -113,3 +113,7 @@ export async function getTokenMetaData(mint?: string): Promise<TokenMetadata> {
     throw error;
   }
 }
+
+// export async function getParseWalletData(wallet: string) {
+
+// }

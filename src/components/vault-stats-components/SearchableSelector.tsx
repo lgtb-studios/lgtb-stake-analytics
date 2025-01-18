@@ -11,6 +11,13 @@ import {
 } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { VaultOptions } from '@/lib/types'
+import { CircleHelp } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface SearchableSelectorProps {
     options: VaultOptions[]
@@ -38,11 +45,26 @@ export function SearchableSelector({
 
     return (
         <Select value={selectedValue} onValueChange={handleSelect}>
-            <SelectTrigger>
-                <SelectValue placeholder="Select a vault">
-                    {selectedValue ? options.find(opt => opt.vault_address === selectedValue)?.token_a_symbol : "Select a vault"}
-                </SelectValue>
-            </SelectTrigger>
+            <div className="flex flex-row items-center justify-between">
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a vault">
+                        {selectedValue ? options.find(opt => opt.vault_address === selectedValue)?.token_a_symbol : "Select a vault"}
+                    </SelectValue>
+                </SelectTrigger>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <CircleHelp className="h-5 w-5  ml-2 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <div className="p-1 text-xs">
+                                Displays a list of vaults that have rewards of $10,000 or more
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
+
             <SelectContent>
                 <div className="px-2 py-2">
                     <div className="relative">

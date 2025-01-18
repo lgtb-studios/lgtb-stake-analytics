@@ -21,9 +21,6 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
     const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
     const [vaultData, setVaultData] = useState<M3M3_VaultData | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
-    // const [vaultLoading, setVaultLoading] = useState(true);
-    // const [tokenLoading, setTokenLoading] = useState(true);
-    // const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!selectedVault) return;
@@ -33,21 +30,17 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
 
         const fetchVaultInfo = async () => {
             try {
-                //if (isInitialLoad) setVaultLoading(true);
                 const vault = await getVaultInfo(selectedVault);
                 if (mounted) {
                     setVaultData(vault);
-                    //setError(null);
                 }
             } catch (error) {
                 console.error("Error fetching vault data:", error);
                 if (mounted) {
-                    //setError("Failed to fetch vault data");
                     setVaultData(null);
                 }
             } finally {
                 if (mounted) {
-                    //setVaultLoading(false);
                     if (isInitialLoad) setIsInitialLoad(false);
                 }
             }
@@ -70,21 +63,17 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
 
         const fetchTokenInfo = async () => {
             try {
-                //if (isInitialLoad) setTokenLoading(true);
                 const token = await getTokenMetaData(vaultData.token_a_mint);
                 if (mounted) {
                     setTokenData(token);
-                    //setError(null);
                 }
             } catch (error) {
                 console.error("Error fetching token data:", error);
                 if (mounted) {
-                    //setError("Failed to fetch token data");
                     setTokenData(null);
                 }
             } finally {
                 if (mounted) {
-                    //setTokenLoading(false);
                     if (isInitialLoad) setIsInitialLoad(false);
                 }
             }
@@ -158,7 +147,6 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
                 <div>Loading...</div>
             ) : (
                 <div className="space-y-4 mt-4">
-                    {/* Header Card */}
                     <Card>
                         <CardContent className="p-4">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -184,7 +172,6 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
                         </CardContent>
                     </Card>
 
-                    {/* Vault Stats */}
                     <Card>
                         <CardHeader className="p-4">
                             <CardTitle className="text-lg">Vault Metrics</CardTitle>
@@ -198,7 +185,6 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
                         </CardContent>
                     </Card>
 
-                    {/* Rewards Stats */}
                     <Card>
                         <CardHeader className="p-4">
                             <CardTitle className="text-lg">Reward Analytics</CardTitle>
