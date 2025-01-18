@@ -53,9 +53,25 @@ export interface TokenMetadata {
     decimals: number;
   };
 }
+export interface VaultSelection {
+  vault_address: string;
+  token_a_mint: string;
+}
 
 export interface VaultOptions {
   vault_address: string;
+  token_a_mint: string;
   token_a_symbol: string;
   current_reward_usd: number;
+}
+
+export interface WalletData {
+  vault_pubkey: string;
+  stake_account: string;
+  wallet_pubkey: string;
+  total_staked_amount: string;
+  total_claimed: {
+    token_a: string;
+    sol: string;
+  };
 }

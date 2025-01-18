@@ -47,19 +47,38 @@ export const calculateStakedPercentage = (
   tokenDecimals: number | undefined,
   displayDecimals: number
 ): string => {
-  const staked =
-    typeof stakedAmount === "string" ? Number(stakedAmount) : stakedAmount;
-  const total =
-    typeof totalSupply === "string" ? Number(totalSupply) : totalSupply;
+  const staked = stakedAmount
+    ? typeof stakedAmount === "string"
+      ? Number(stakedAmount)
+      : stakedAmount
+    : 0;
+  const total = totalSupply
+    ? typeof totalSupply === "string"
+      ? Number(totalSupply)
+      : totalSupply
+    : 0;
 
   const decimals = tokenDecimals ?? 0;
-  const adjustedTotal = total ? total / Math.pow(10, decimals) : 0;
+  const adjustedTotal = total / Math.pow(10, decimals);
 
-  if (!adjustedTotal || !staked || adjustedTotal === 0) {
+  if (adjustedTotal === 0) {
     return "0";
   }
 
   const percentage = (staked / adjustedTotal) * 100;
 
-  return percentage.toFixed(displayDecimals);
+  return percentage.toLocaleString("en-US", {
+    minimumFractionDigits: displayDecimals,
+    maximumFractionDigits: displayDecimals,
+  });
 };
+
+export function formatTokenAmount(amount: number, decimals: number): string {
+  console.log("Formatting:", { amount, decimals });
+  const formatted = (amount / Math.pow(10, decimals)).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: decimals,
+  });
+  console.log("Result:", formatted);
+  return formatted;
+}

@@ -1,13 +1,23 @@
-// import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { config } from "@config/config";
-import { M3M3_VaultData, TokenMetadata, VaultOptions } from "./types";
+import {
+  M3M3_VaultData,
+  TokenMetadata,
+  VaultOptions,
+  WalletData,
+} from "./types";
 import { Connection } from "@solana/web3.js";
+import { formatTokenAmount } from "./utils";
 
-// const m3m3_PROGRAM_ID = new PublicKey(
-//   "FEESngU3neckdwib9X3KWqdL7Mjmqk9XNp3uh5JbP4KP"
-// );
+const m3m3_PROGRAM_ID = new PublicKey(
+  "FEESngU3neckdwib9X3KWqdL7Mjmqk9XNp3uh5JbP4KP"
+);
 // const LGTB_TOKEN_MINT_ADDRESS = new PublicKey(
 //   "2vFYpCh2yJhHphft1Z4XHdafEhj6XksyhFyH9tvTdKqf"
+// );
+
+// const TEST_WALLET = new PublicKey(
+//   "6U3XNWQdwEjz6nXBNMqk4kx2xNqvmauUgtRFeD9ESzQD"
 // );
 // const LGTB_VAULT_ADDRESS = new PublicKey('ZxuHhk6X1nBP3A7vLPYrUSugsbxtCAqk5sm3W7eGFNk');
 
@@ -43,8 +53,9 @@ export async function getVaults(): Promise<VaultOptions[]> {
     }
 
     const responseData = await response.json();
+    console.log("responseData:", responseData);
 
-    return responseData.data
+    const filteredVaults = responseData.data
       .filter(
         (vault: { current_reward_usd: number }) =>
           vault.current_reward_usd >= 10000
@@ -53,13 +64,25 @@ export async function getVaults(): Promise<VaultOptions[]> {
         (vault: {
           vault_address: string;
           token_a_symbol: string;
+          token_a_mint: string;
           current_reward_usd: number;
         }) => ({
           vault_address: vault.vault_address,
           token_a_symbol: vault.token_a_symbol,
+          token_a_mint: vault.token_a_mint,
           current_reward_usd: vault.current_reward_usd,
         })
       );
+
+    const sortedVaults = filteredVaults.sort(
+      (a: { token_a_symbol: string }, b: { token_a_symbol: string }) => {
+        if (a.token_a_symbol === "LGTB") return -1;
+        if (b.token_a_symbol === "LGTB") return 1;
+        return 0;
+      }
+    );
+
+    return sortedVaults;
   } catch (error) {
     console.error("Error fetching vaults:", error);
     return [];
@@ -114,6 +137,95 @@ export async function getTokenMetaData(mint?: string): Promise<TokenMetadata> {
   }
 }
 
-// export async function getParseWalletData(wallet: string) {
+export async function getStakingHistory(
+  tokenMint: string,
+  wallet: string
+): Promise<WalletData> {
+  try {
+    const programAccount = await connection.getProgramAccounts(
+      m3m3_PROGRAM_ID,
+      {
+        filters: [
+          {
+            memcmp: {
+              offset: 8,
+              bytes: wallet,
+            },
+          },
+        ],
+      }
+    );
+    console.log("tokenMint:", tokenMint);
+    console.log("wallet:", wallet);
 
-// }
+    const account = programAccount[0];
+    const data = account.account.data;
+
+    const feeAClaimedAmount = data.subarray(120, 128).readBigUInt64LE(0);
+    const feeBClaimedAmount = data.subarray(136, 144).readBigUInt64LE(0);
+
+    const tokenADecimals = await getTokenDecimals(new PublicKey(tokenMint));
+
+    //needs clean up <-----------
+    return {
+      stake_account: account.pubkey.toBase58(),
+      wallet_pubkey: new PublicKey(data.subarray(8, 40)).toBase58(),
+      vault_pubkey: new PublicKey(data.subarray(40, 72)).toBase58(),
+      total_staked_amount: (() => {
+        const rawStakeAmount = data.subarray(80, 88).readBigUInt64LE(0);
+        console.log("Raw stake amount (BigInt):", rawStakeAmount.toString());
+        const formatted = formatTokenAmount(
+          Number(rawStakeAmount),
+          tokenADecimals
+        );
+        console.log("Formatted stake amount:", formatted);
+        return formatted;
+      })(),
+      total_claimed: {
+        token_a: (() => {
+          console.log(
+            "Raw fee A claimed (BigInt):",
+            feeAClaimedAmount.toString()
+          );
+          const formatted = formatTokenAmount(
+            Number(feeAClaimedAmount),
+            tokenADecimals
+          );
+          console.log("Formatted token A claimed:", formatted);
+          return formatted;
+        })(),
+        sol: (() => {
+          console.log(
+            "Raw fee B claimed (BigInt):",
+            feeBClaimedAmount.toString()
+          );
+          const formatted = formatTokenAmount(Number(feeBClaimedAmount), 9);
+          console.log("Formatted SOL claimed:", formatted);
+          return formatted;
+        })(),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching staking history:", error);
+    throw error;
+  }
+}
+
+async function getTokenDecimals(mint: PublicKey): Promise<number> {
+  const tokenInfo = await connection.getParsedAccountInfo(mint);
+
+  if (tokenInfo.value && tokenInfo.value.data) {
+    const data = tokenInfo.value.data as {
+      parsed: { info: { decimals: number } };
+    };
+    if (
+      data.parsed &&
+      data.parsed.info &&
+      typeof data.parsed.info.decimals === "number"
+    ) {
+      return data.parsed.info.decimals;
+    }
+  }
+
+  return 9;
+}

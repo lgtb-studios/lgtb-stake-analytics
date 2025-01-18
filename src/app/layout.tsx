@@ -44,7 +44,7 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col container mx-auto relative">
             <Header />
             <main className="flex-1">
-              <div className="w-full px-2 sm:px-4 lg:px-4 py-4">
+              <div className="w-full px-1 sm:px-4 lg:px-4 py-2">
                 {children}
               </div>
             </main>

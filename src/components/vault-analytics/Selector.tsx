@@ -1,7 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Check, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Check } from 'lucide-react'
 import {
     Select,
     SelectContent,
@@ -10,7 +9,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { VaultOptions } from '@/lib/types'
+import { VaultOptions, VaultSelection } from '@/lib/types'
 import { CircleHelp } from 'lucide-react';
 import {
     Tooltip,
@@ -22,25 +21,21 @@ import {
 interface SearchableSelectorProps {
     options: VaultOptions[]
     placeholder?: string
-    onSelect: (value: string) => void
+    onSelect: (value: VaultSelection) => void
 }
 
-export function SearchableSelector({
+export function Selector({
     options = [],
-    placeholder = 'Search vaults...',
     onSelect
 }: SearchableSelectorProps) {
-    const [searchQuery, setSearchQuery] = React.useState('')
     const [selectedValue, setSelectedValue] = React.useState('')
 
-    const filteredOptions = options.filter(option =>
-        option.token_a_symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        option.vault_address.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-
     const handleSelect = (value: string) => {
-        setSelectedValue(value)
-        onSelect(value)
+        const selectedOption = options.find(opt => opt.vault_address === value);
+        if (selectedOption) {
+            setSelectedValue(value);
+            onSelect(selectedOption);
+        }
     }
 
     return (
@@ -66,32 +61,16 @@ export function SearchableSelector({
             </div>
 
             <SelectContent>
-                <div className="px-2 py-2">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder={placeholder}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Escape') {
-                                    setSearchQuery('')
-                                }
-                            }}
-                            className="pl-8"
-                        />
-                    </div>
-                </div>
                 <ScrollArea className="h-[200px]">
-                    {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option) => (
+                    {options.length > 0 ? (
+                        options.map((option) => (
                             <SelectItem
                                 key={option.vault_address}
                                 value={option.vault_address}
                             >
                                 <div className="flex items-center justify-between">
                                     <span>{option.token_a_symbol}</span>
-                                    {selectedValue === option.vault_address && (
+                                    {selectedValue === option.token_a_mint && (
                                         <Check className="h-4 w-4 ml-2" />
                                     )}
                                 </div>
