@@ -1,3 +1,5 @@
+export type DialogType = "report" | "support" | "follow" | null;
+
 interface topList {
   owner: string;
   staked_amount: number;
@@ -31,7 +33,7 @@ export interface M3M3_VaultData {
   top_lists: topList[];
 }
 
-export type TokenMetadata = {
+export interface TokenMetadata {
   id: string;
   content: {
     metadata: {
@@ -50,4 +52,10 @@ export type TokenMetadata = {
     supply: number;
     decimals: number;
   };
-};
+}
+
+export interface VaultOptions {
+  vault_address: string;
+  token_a_symbol: string;
+  current_reward_usd: number;
+}

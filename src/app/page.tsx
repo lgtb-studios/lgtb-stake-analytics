@@ -1,13 +1,14 @@
 'use client'
-import { ThemeModeToggle } from "@/components/ThemeModeToggle";
 import VaultStats from "@/components/vault-stats-components/VaultStats";
-import { AddressForm } from "@/components/AddressForm";
-import { useState } from "react";
+// import { AddressForm } from "@/components/AddressForm";
+import { useEffect, useState } from "react";
+import { getVaults } from "@/lib/Web3";
+import { VaultOptions } from "@/lib/types";
 //import Image from "next/image";
 
 export default function Home() {
-  //const lgtbVaultAddress = 'ZxuHhk6X1nBP3A7vLPYrUSugsbxtCAqk5sm3W7eGFNk';
-  const [vaultAddress, setVaultAddress] = useState<string>('');
+  const [vaults, setVaults] = useState<VaultOptions[]>([]);
+  const [selectedVault, setSelectedVault] = useState<string | null>(null);
   // const [walletAddress, setWalletAddress] = useState<string>('');
 
   //work on later
@@ -15,18 +16,38 @@ export default function Home() {
 
   //   console.log(address);
   // };
-
-  const handleVaultAddressSubmit = async (address: string) => {
-    setVaultAddress(address);
+  const handleVaultSelect = (address: string) => {
+    setSelectedVault(address);
+    // Do anything else you need with the selected address here
   };
+
+
+  useEffect(() => {
+    const fetchVaults = async () => {
+      try {
+        const vaultsData = await getVaults();
+        setVaults(vaultsData || []);
+      } catch (error) {
+        console.error('Error fetching vaults:', error);
+      }
+    };
+
+    fetchVaults();
+  }, []);
+  // console.log(vaults);
 
   return (
     <div className="w-full p-4">
-      <ThemeModeToggle />
       <div className="w-full max-w-full">
 
-        {vaultAddress ? <VaultStats vaultAddress={vaultAddress} onSubmit={handleVaultAddressSubmit} />
-          : <AddressForm onSubmit={handleVaultAddressSubmit} label="vault" />}
+        {Array.isArray(vaults) ? ( // Only render if vaults is an array
+          <VaultStats
+            vaultOptions={vaults}
+            onVaultSelect={handleVaultSelect}
+            selectedVault={selectedVault}
+          />
+        ) : null}
+
       </div>
       {/* <AddressForm onSubmit={handleAddressSubmit} label="wallet" /> */}
     </div>

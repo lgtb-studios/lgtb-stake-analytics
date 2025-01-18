@@ -1,6 +1,6 @@
 // import { PublicKey } from "@solana/web3.js";
 import { config } from "@config/config";
-import { M3M3_VaultData, TokenMetadata } from "./types";
+import { M3M3_VaultData, TokenMetadata, VaultOptions } from "./types";
 import { Connection } from "@solana/web3.js";
 
 // const m3m3_PROGRAM_ID = new PublicKey(
@@ -31,6 +31,40 @@ export const connection = new Connection(
   config.solana.mainnet as string,
   "confirmed"
 );
+
+export async function getVaults(): Promise<VaultOptions[]> {
+  try {
+    const response = await fetch(
+      "https://stake-for-fee-api.meteora.ag/vault/all"
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+
+    return responseData.data
+      .filter(
+        (vault: { current_reward_usd: number }) =>
+          vault.current_reward_usd >= 10000
+      )
+      .map(
+        (vault: {
+          vault_address: string;
+          token_a_symbol: string;
+          current_reward_usd: number;
+        }) => ({
+          vault_address: vault.vault_address,
+          token_a_symbol: vault.token_a_symbol,
+          current_reward_usd: vault.current_reward_usd,
+        })
+      );
+  } catch (error) {
+    console.error("Error fetching vaults:", error);
+    return [];
+  }
+}
 
 export async function getVaultInfo(
   vaultAddress: string

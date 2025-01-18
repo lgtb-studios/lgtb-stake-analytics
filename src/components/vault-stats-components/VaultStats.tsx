@@ -1,33 +1,40 @@
 'use client'
-import { M3M3_VaultData, TokenMetadata } from "@/lib/types";
-import { Card, CardContent } from "../ui/card";
+import { M3M3_VaultData, TokenMetadata, VaultOptions } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { calculateStakedPercentage, formatNumberWithCommas } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getTokenMetaData } from "@/lib/Web3";
 import { getVaultInfo } from "@/lib/Web3";
-import { AddressForm } from "../AddressForm";
+
+import { SearchableSelector } from "./SearchableSelector";
+import { StatsCard } from "./StatsCard";
+import Image from "next/image";
+
 
 interface VaultStatsProps {
-    vaultAddress: string;
-    onSubmit: (address: string) => void;
+    vaultOptions: VaultOptions[];
+    onVaultSelect: (address: string) => void;
+    selectedVault: string | null;
 }
 
-export default function VaultStats({ vaultAddress, onSubmit }: VaultStatsProps) {
+export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault }: VaultStatsProps) {
     const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
     const [vaultData, setVaultData] = useState<M3M3_VaultData | null>(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [vaultLoading, setVaultLoading] = useState(true);
     const [tokenLoading, setTokenLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [initialLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
+        if (!selectedVault) return;
+
         let mounted = true;
         let intervalId: NodeJS.Timeout;
 
         const fetchVaultInfo = async () => {
             try {
-                if (initialLoad) setVaultLoading(true);
-                const vault = await getVaultInfo(vaultAddress);
+                if (isInitialLoad) setVaultLoading(true);
+                const vault = await getVaultInfo(selectedVault);
                 if (mounted) {
                     setVaultData(vault);
                     setError(null);
@@ -41,7 +48,7 @@ export default function VaultStats({ vaultAddress, onSubmit }: VaultStatsProps) 
             } finally {
                 if (mounted) {
                     setVaultLoading(false);
-                    if (initialLoad) setInitialLoad(false);
+                    if (isInitialLoad) setIsInitialLoad(false);
                 }
             }
         };
@@ -54,132 +61,159 @@ export default function VaultStats({ vaultAddress, onSubmit }: VaultStatsProps) 
             mounted = false;
             clearInterval(intervalId);
         };
-    }, [vaultAddress]);
+    }, [isInitialLoad, selectedVault]);
 
     useEffect(() => {
+        if (!vaultData?.token_a_mint) return;
+
         let mounted = true;
 
-        const fetchVaultInfo = async () => {
-            if (!vaultData?.token_a_mint) {
-                setError("No token mint address available");
-                setTokenLoading(false);
-                return;
-            }
-
+        const fetchTokenInfo = async () => {
             try {
-                if (initialLoad) setTokenLoading(true);
+                if (isInitialLoad) setTokenLoading(true);
                 const token = await getTokenMetaData(vaultData.token_a_mint);
-
                 if (mounted) {
                     setTokenData(token);
                     setError(null);
                 }
             } catch (error) {
-                console.error("Error fetching vault data:", error);
+                console.error("Error fetching token data:", error);
                 if (mounted) {
-                    setError("Failed to fetch vault data");
+                    setError("Failed to fetch token data");
                     setTokenData(null);
                 }
             } finally {
                 if (mounted) {
                     setTokenLoading(false);
-                    if (initialLoad) setInitialLoad(false);
+                    if (isInitialLoad) setIsInitialLoad(false);
                 }
             }
         };
-        fetchVaultInfo();
+
+        fetchTokenInfo();
+
         return () => {
             mounted = false;
         };
     }, [vaultData?.token_a_mint]);
 
-    // Now loading state only shows on initial load
-    if (initialLoad && (vaultLoading || tokenLoading)) {
-        return <div>Loading...</div>;
-    }
+    const vaultRewardsStats = [
+        {
+            label: `${vaultData?.token_a_symbol} Rewards USD`,
+            value: `$${formatNumberWithCommas(vaultData?.current_reward_token_a_usd.toFixed(4))}`,
+        },
+        {
+            label: `${vaultData?.token_b_symbol} Rewards USD`,
+            value: `$${formatNumberWithCommas(vaultData?.current_reward_token_b_usd.toFixed(4))}`,
+        },
+        {
+            label: `Total USD Rewards`,
+            value: `$${formatNumberWithCommas(vaultData?.current_reward_usd.toFixed(2))}`,
+        },
+        {
+            label: `Daily Rewards`,
+            value: `$${formatNumberWithCommas(vaultData?.daily_reward_usd.toFixed(2))}`,
+        },
+
+    ];
+    const tokenStats = [
+        {
+            label: `${vaultData?.token_a_symbol} USD Price`,
+            value: `$${tokenData?.token_info?.price_info?.price_per_token.toFixed(7)}`,
+        },
+        {
+            label: `Market Cap`,
+            value: `$${formatNumberWithCommas(vaultData?.marketcap)}`,
+        },
+    ]
+
+    const vaultTokenStats = [
+        {
+            label: `Total Staked`,
+            value: `${formatNumberWithCommas(vaultData?.total_staked_amount)}`,
+        },
+        {
+            label: `Total Staked USD`,
+            value: `$${formatNumberWithCommas(vaultData?.total_staked_amount_usd.toFixed(2))}`,
+        },
+        {
+            label: `Total Staked Percentage`,
+            value: `${calculateStakedPercentage(
+                Number(vaultData?.total_staked_amount),
+                Number(tokenData?.token_info?.supply),
+                tokenData?.token_info?.decimals,
+                2)}%`,
+        },
+    ]
 
 
-    console.log(tokenData?.token_info);
     return (
         <div>
-            <AddressForm onSubmit={onSubmit} label="vault" />
-            <div className="flex  flex-wrap overflow-x-auto gap-2 pb-2 mt-4">
-                <Card className="min-w-[130px]shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">{vaultData?.token_a_symbol} Rewards USD</div>
-                        <div className="text-sm font-semibold">
-                            ${formatNumberWithCommas(vaultData?.current_reward_token_a_usd.toFixed(4))}
-                        </div>
-                    </CardContent>
-                </Card>
+            <SearchableSelector
+                options={vaultOptions}
+                placeholder="Select an option"
+                onSelect={onVaultSelect}
+            />
+            {selectedVault && (isInitialLoad ? (
+                <div>Loading...</div>
+            ) : (
+                <div className="space-y-4 mt-4">
+                    {/* Header Card */}
+                    <Card>
+                        <CardContent className="p-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <Image
+                                    src={tokenData?.content.links.image || '/default-image.png'}
+                                    alt={tokenData?.content.metadata.name || 'Default Alt Text'}
+                                    width={100}
+                                    height={100}
+                                    className="w-16 h-16 rounded-full"
+                                />
+                                <div>
+                                    <CardTitle className="text-lg">
+                                        {tokenData?.content.metadata.name}
+                                    </CardTitle>
+                                    <p className="text-sm text-muted-foreground">Token Analytics</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
+                                {tokenStats.map((stat, index) => (
+                                    <StatsCard key={index} label={stat.label} value={stat.value} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                <Card className="min-w-[130px] shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">{vaultData?.token_b_symbol} Rewards USD</div>
-                        <div className="text-sm font-semibold">
-                            ${formatNumberWithCommas(vaultData?.current_reward_token_b_usd.toFixed(4))}
-                        </div>
-                    </CardContent>
-                </Card>
+                    {/* Vault Stats */}
+                    <Card>
+                        <CardHeader className="p-4">
+                            <CardTitle className="text-lg">Vault Metrics</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {vaultTokenStats.map((stat, index) => (
+                                    <StatsCard key={index} label={stat.label} value={stat.value} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                <Card className="min-w-[130px] shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">USD Rewards</div>
-                        <div className="text-sm font-semibold">
-                            ${formatNumberWithCommas(vaultData?.current_reward_usd.toFixed(2).toLocaleString())}
-                        </div>
-                    </CardContent>
-                </Card>
+                    {/* Rewards Stats */}
+                    <Card>
+                        <CardHeader className="p-4">
+                            <CardTitle className="text-lg">Reward Analytics</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {vaultRewardsStats.map((stat, index) => (
+                                    <StatsCard key={index} label={stat.label} value={stat.value} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                <Card className="min-w-[130px] shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">Daily Rewards</div>
-                        <div className="text-sm font-semibold">
-                            ${formatNumberWithCommas(vaultData?.daily_reward_usd.toFixed(2).toLocaleString())}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="min-w-[130px]shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">Market Cap</div>
-                        <div className="text-sm font-semibold">
-                            ${vaultData?.marketcap.toLocaleString()}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="flex  flex-wrap overflow-x-auto gap-2 pb-2 ">
-                <Card className="min-w-[130px]shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">Total Staked</div>
-                        <div className="text-sm font-semibold">
-                            {formatNumberWithCommas(vaultData?.total_staked_amount)}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="min-w-[130px] shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">Total Staked USD</div>
-                        <div className="text-sm font-semibold">
-                            ${formatNumberWithCommas(vaultData?.total_staked_amount_usd.toFixed(2))}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="min-w-[130px] shadow-sm">
-                    <CardContent className="p-2">
-                        <div className="text-[10px]">Total Staked Percentage</div>
-                        <div className="text-sm font-semibold">
-                            {calculateStakedPercentage(
-                                Number(vaultData?.total_staked_amount),
-                                Number(tokenData?.token_info?.supply),
-                                tokenData?.token_info?.decimals,
-                                2
-                            )}%
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            ))}
         </div>
 
     )

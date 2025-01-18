@@ -4,13 +4,13 @@ export const StatsCard = ({
   label,
   value,
 }: {
-  label: string;
-  value: string | number;
+  label: string | undefined;
+  value: string | number | undefined;
 }) => (
-  <Card className="min-w-[130px] shadow-sm">
-    <CardContent className="p-2">
-      <div className="text-[10px]">{label}</div>
-      <div className="text-sm font-semibold">{value}</div>
+  <Card className="bg-muted/50">
+    <CardContent className="p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-sm font-semibold mt-1">{value}</div>
     </CardContent>
   </Card>
 );
