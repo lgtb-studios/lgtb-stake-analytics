@@ -23,7 +23,7 @@ function CopyButton({ value, onCopy }: CopyButtonProps) {
             })
             onCopy?.()
             setTimeout(() => setHasCopied(false), 2000)
-        } catch (error) {
+        } catch {
             toast({
                 variant: "destructive",
                 description: "Failed to copy to clipboard",
