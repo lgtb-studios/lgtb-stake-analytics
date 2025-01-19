@@ -1,20 +1,21 @@
 'use client'
-import { M3M3_VaultData, TokenMetadata, VaultOptions } from "@/lib/types";
+import { M3M3_VaultData, TokenMetadata, VaultOptions, VaultSelection } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { calculateStakedPercentage, formatNumberWithCommas } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getTokenMetaData } from "@/lib/Web3";
 import { getVaultInfo } from "@/lib/Web3";
 
-import { SearchableSelector } from "./SearchableSelector";
-import { StatsCard } from "./StatsCard";
+import { Selector } from "./Selector";
+import { StatsCard } from "../StatsCard";
 import Image from "next/image";
+import { IconLinks } from "./IconLinks";
 
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
-    onVaultSelect: (address: string) => void;
-    selectedVault: string | null;
+    onVaultSelect: (address: VaultSelection) => void;
+    selectedVault: string | undefined
 }
 
 export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault }: VaultStatsProps) {
@@ -48,7 +49,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
 
         fetchVaultInfo();
         // eslint-disable-next-line prefer-const
-        intervalId = setInterval(fetchVaultInfo, 15000);
+        intervalId = setInterval(fetchVaultInfo, 10000);
 
         return () => {
             mounted = false;
@@ -138,7 +139,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
 
     return (
         <div>
-            <SearchableSelector
+            <Selector
                 options={vaultOptions}
                 placeholder="Select an option"
                 onSelect={onVaultSelect}
@@ -146,24 +147,36 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
             {selectedVault && (isInitialLoad ? (
                 <div>Loading...</div>
             ) : (
-                <div className="space-y-4 mt-4">
+                <div className="space-y-2 mt-2">
                     <Card>
-                        <CardContent className="p-4">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                <Image
-                                    src={tokenData?.content.links.image || '/default-image.png'}
-                                    alt={tokenData?.content.metadata.name || 'Default Alt Text'}
-                                    width={100}
-                                    height={100}
-                                    className="w-16 h-16 rounded-full"
-                                />
-                                <div>
-                                    <CardTitle className="text-lg">
-                                        {tokenData?.content.metadata.name}
-                                    </CardTitle>
-                                    <p className="text-sm text-muted-foreground">Token Analytics</p>
+                        <CardContent className="p-2 relative">
+                            <div className="flex justify-between">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                    <Image
+                                        src={tokenData?.content.links.image || '/default-image.png'}
+                                        alt={tokenData?.content.metadata.name || 'Default Alt Text'}
+                                        width={100}
+                                        height={100}
+                                        className="w-16 h-16 rounded-full"
+                                    />
+                                    <div>
+                                        <CardTitle className="text-lg">
+                                            {tokenData?.content.metadata.name}
+                                        </CardTitle>
+                                        <p className="text-sm text-muted-foreground">Token Analytics</p>
+                                        <IconLinks poolAddress={vaultData?.pool_address} tokenSymbol={vaultData?.token_a_symbol} />
+                                    </div>
                                 </div>
+                                {vaultData?.token_a_symbol.includes('LGTB') && (
+                                    <Image
+                                        src='/lgtb-meme.png'
+                                        alt='LGTB Meme'
+                                        width={140}
+                                        height={140}
+                                        className="absolute right-0 top-1"
+                                    />)}
                             </div>
+
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
                                 {tokenStats.map((stat, index) => (
                                     <StatsCard key={index} label={stat.label} value={stat.value} />
@@ -173,7 +186,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
                     </Card>
 
                     <Card>
-                        <CardHeader className="p-4">
+                        <CardHeader className="p-2">
                             <CardTitle className="text-lg">Vault Metrics</CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
@@ -186,10 +199,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
                     </Card>
 
                     <Card>
-                        <CardHeader className="p-4">
-                            <CardTitle className="text-lg">Reward Analytics</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
+                        <CardContent className="p-2">
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                                 {vaultRewardsStats.map((stat, index) => (
                                     <StatsCard key={index} label={stat.label} value={stat.value} />

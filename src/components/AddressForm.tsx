@@ -38,27 +38,29 @@ export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) =
 
     const handleSubmit = (values: FormValues) => {
         onSubmit(values.address);
+        form.reset();
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex space-x-4 mt-4">
                 <FormField
                     control={form.control}
                     name="address"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex-1">
                             <FormControl>
                                 <Input
                                     placeholder={`Enter ${label} address`}
                                     {...field}
+                                    className="h-full text-theme-color"
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Check</Button>
+                <Button type="submit" className="h-full">Check</Button>
             </form>
         </Form>
     );
