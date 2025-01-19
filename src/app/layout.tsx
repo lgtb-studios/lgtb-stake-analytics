@@ -2,10 +2,9 @@
 //import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Header } from "@/components/header/Header";
 import { FloatingActionButton } from "@/components/support-dialogs/FloatingActionButton";
-import { Toaster } from "@/components/ui/toaster";
+import { AppProviders } from "@/components/providers/AppProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,13 +33,7 @@ export default function RootLayout({
         suppressHydrationWarning
 
       >
-
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <AppProviders>
           <div className="min-h-screen flex flex-col container mx-auto relative">
             <Header />
             <main className="flex-1">
@@ -48,10 +41,9 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
+            <FloatingActionButton />
           </div>
-          <FloatingActionButton />
-          <Toaster />
-        </ThemeProvider>
+        </AppProviders>
       </body>
     </html>
   );

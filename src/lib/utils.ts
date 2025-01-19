@@ -74,11 +74,31 @@ export const calculateStakedPercentage = (
 };
 
 export function formatTokenAmount(amount: number, decimals: number): string {
-  console.log("Formatting:", { amount, decimals });
   const formatted = (amount / Math.pow(10, decimals)).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: decimals,
   });
-  console.log("Result:", formatted);
   return formatted;
+}
+
+export function calculateStakedValue(
+  stakedAmount: number | string | undefined,
+  pricePerToken: number | string | undefined
+): number {
+  const cleanStakedAmount =
+    typeof stakedAmount === "string"
+      ? stakedAmount.replace(/,/g, "")
+      : stakedAmount;
+
+  const staked = cleanStakedAmount ? Number(cleanStakedAmount) : 0;
+
+  const price = pricePerToken
+    ? typeof pricePerToken === "string"
+      ? Number(pricePerToken)
+      : pricePerToken
+    : 0;
+
+  if (staked === 0 || price === 0) return 0;
+
+  return parseFloat((staked * price).toFixed(4));
 }
