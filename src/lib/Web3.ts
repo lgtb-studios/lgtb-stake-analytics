@@ -4,14 +4,14 @@ import {
   M3M3_VaultData,
   TokenMetadata,
   VaultOptions,
+  VaultSelection,
   WalletData,
 } from "./types";
 import { Connection } from "@solana/web3.js";
 import { formatTokenAmount } from "./utils";
+import { StakeEscrow } from "./Models";
+import { m3m3_PROGRAM_ID } from "./utils";
 
-const m3m3_PROGRAM_ID = new PublicKey(
-  "FEESngU3neckdwib9X3KWqdL7Mjmqk9XNp3uh5JbP4KP"
-);
 // const LGTB_TOKEN_MINT_ADDRESS = new PublicKey(
 //   "2vFYpCh2yJhHphft1Z4XHdafEhj6XksyhFyH9tvTdKqf"
 // );
@@ -37,6 +37,7 @@ const m3m3_PROGRAM_ID = new PublicKey(
 //   "HkkjwRtgtqepZd2uEZcmBoWK7JkxBVWCfXpq1GzLoToT"
 // );
 
+// const api_key = config.solana.apiKey;
 export const connection = new Connection(
   config.solana.mainnet as string,
   "confirmed"
@@ -53,7 +54,6 @@ export async function getVaults(): Promise<VaultOptions[]> {
     }
 
     const responseData = await response.json();
-    console.log("responseData:", responseData);
 
     const filteredVaults = responseData.data
       .filter(
@@ -125,86 +125,70 @@ export async function getTokenMetaData(mint?: string): Promise<TokenMetadata> {
       }),
     });
     const data = await response.json();
+    const tokenPrice = await getTokenPrice(mint as string);
 
     if (!data.result) {
       throw new Error("No result in API response");
     }
 
-    return data.result;
+    return {
+      ...data.result,
+      tokenPrice: tokenPrice,
+    };
   } catch (error) {
     console.error("Error fetching token metadata:", error);
     throw error;
   }
 }
 
-export async function getStakingHistory(
-  tokenMint: string,
-  wallet: string
+export async function getEscrowAccont(
+  wallet: string,
+  selectedVault: VaultSelection
 ): Promise<WalletData> {
   try {
-    const programAccount = await connection.getProgramAccounts(
-      m3m3_PROGRAM_ID,
-      {
-        filters: [
-          {
-            memcmp: {
-              offset: 8,
-              bytes: wallet,
-            },
+    console.log("Searching for wallet:", wallet);
+    console.log("selectedVault:", selectedVault);
+    const accounts = await connection.getProgramAccounts(m3m3_PROGRAM_ID, {
+      filters: [
+        {
+          memcmp: {
+            offset: 8,
+            bytes: wallet,
           },
-        ],
-      }
+        },
+      ],
+    });
+
+    console.log("Found accounts:", accounts.length);
+    const tokenADecimals = await getTokenDecimals(
+      new PublicKey(selectedVault.token_a_mint)
     );
-    console.log("tokenMint:", tokenMint);
-    console.log("wallet:", wallet);
 
-    const account = programAccount[0];
-    const data = account.account.data;
+    const returnData: WalletData[] = accounts
+      .map(({ account }) => {
+        const decoded = StakeEscrow.decode(account.data);
+        if (decoded.vault.equals(new PublicKey(selectedVault.vault_address))) {
+          return {
+            wallet_pubkey: wallet,
+            vault_pubkey: decoded.vault.toBase58(),
+            total_staked_amount: formatTokenAmount(
+              Number(decoded.stakeAmount),
+              tokenADecimals
+            ),
+            total_claimed: {
+              token_a: formatTokenAmount(
+                Number(decoded.feeAClaimedAmount),
+                tokenADecimals
+              ),
+              sol: formatTokenAmount(Number(decoded.feeBClaimedAmount), 9),
+            },
+          };
+        }
+        return undefined;
+      })
+      .filter((data): data is WalletData => data !== undefined);
 
-    const feeAClaimedAmount = data.subarray(120, 128).readBigUInt64LE(0);
-    const feeBClaimedAmount = data.subarray(136, 144).readBigUInt64LE(0);
-
-    const tokenADecimals = await getTokenDecimals(new PublicKey(tokenMint));
-
-    //needs clean up <-----------
-    return {
-      stake_account: account.pubkey.toBase58(),
-      wallet_pubkey: new PublicKey(data.subarray(8, 40)).toBase58(),
-      vault_pubkey: new PublicKey(data.subarray(40, 72)).toBase58(),
-      total_staked_amount: (() => {
-        const rawStakeAmount = data.subarray(80, 88).readBigUInt64LE(0);
-        console.log("Raw stake amount (BigInt):", rawStakeAmount.toString());
-        const formatted = formatTokenAmount(
-          Number(rawStakeAmount),
-          tokenADecimals
-        );
-        console.log("Formatted stake amount:", formatted);
-        return formatted;
-      })(),
-      total_claimed: {
-        token_a: (() => {
-          console.log(
-            "Raw fee A claimed (BigInt):",
-            feeAClaimedAmount.toString()
-          );
-          const formatted = formatTokenAmount(
-            Number(feeAClaimedAmount),
-            tokenADecimals
-          );
-          console.log("Formatted token A claimed:", formatted);
-          return formatted;
-        })(),
-        sol: (() => {
-          console.log(
-            "Raw fee B claimed (BigInt):",
-            feeBClaimedAmount.toString()
-          );
-          const formatted = formatTokenAmount(Number(feeBClaimedAmount), 9);
-          console.log("Formatted SOL claimed:", formatted);
-          return formatted;
-        })(),
-      },
-    };
+    return returnData[0];
   } catch (error) {
     console.error("Error fetching staking history:", error);
     throw error;
@@ -228,4 +212,21 @@ async function getTokenDecimals(mint: PublicKey): Promise<number> {
   }
 
   return 9;
+}
+
+async function getTokenPrice(mint: string): Promise<number> {
+  try {
+    const response = await fetch(`https://api.jup.ag/price/v2?ids=${mint}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const { data } = await response.json();
+
+    return data[mint].price;
+  } catch (error) {
+    console.error("Error fetching token price:", error);
+    throw error;
+  }
 }

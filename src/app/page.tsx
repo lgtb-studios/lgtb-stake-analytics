@@ -5,18 +5,27 @@ import { useEffect, useState } from "react";
 import { getVaults } from "@/lib/Web3";
 import { VaultOptions, VaultSelection } from "@/lib/types";
 import WalletStats from "@/components/wallet-analytics/WalletStats";
+import { useVault } from '@/components/providers/VaultDataProvider';
 
 export default function Home() {
+  const {
+    selectedVault,
+    setSelectedVault,
+    walletAddress,
+    setWalletAddress,
+    resetWalletData,
+    resetWalletAddress
+  } = useVault();
   const [vaults, setVaults] = useState<VaultOptions[]>([]);
-  const [selectedVault, setSelectedVault] = useState<VaultSelection | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string>('');
 
-  const handleAddressSubmit = async (address: string) => {
+  const handleAddressSubmit = (address: string) => {
     setWalletAddress(address);
   };
-  const handleVaultSelect = (address: VaultSelection) => {
-    setSelectedVault(address);
-    setWalletAddress('');
+
+  const handleVaultSelect = (vault: VaultSelection) => {
+    setSelectedVault(vault);
+    resetWalletData();
+    resetWalletAddress();
   };
 
   useEffect(() => {
@@ -34,22 +43,22 @@ export default function Home() {
   return (
     <div className="w-full p-4">
       <div className="w-full max-w-full">
-
-        {Array.isArray(vaults) ? (
-          <VaultStats
-            vaultOptions={vaults}
-            onVaultSelect={handleVaultSelect}
-            selectedVault={selectedVault?.vault_address}
-          />
-        ) : null}
-
-      </div>
-      {selectedVault && <AddressForm onSubmit={handleAddressSubmit} label="wallet" />}
-      {walletAddress && (
-        <WalletStats
-          pubkey={walletAddress}
-          selectedVault={selectedVault}
+        <VaultStats
+          vaultOptions={vaults}
+          onVaultSelect={handleVaultSelect}
+          selectedVault={selectedVault?.vault_address}
         />
+      </div>
+
+      {selectedVault && (
+        <AddressForm
+          onSubmit={handleAddressSubmit}
+          label="wallet"
+        />
+      )}
+
+      {walletAddress && (
+        <WalletStats />
       )}
     </div>
   );

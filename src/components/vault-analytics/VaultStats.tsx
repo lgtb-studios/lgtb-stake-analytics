@@ -1,5 +1,5 @@
 'use client'
-import { M3M3_VaultData, TokenMetadata, VaultOptions, VaultSelection } from "@/lib/types";
+import { VaultOptions, VaultSelection } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { calculateStakedPercentage, formatNumberWithCommas } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -10,17 +10,22 @@ import { Selector } from "./Selector";
 import { StatsCard } from "../StatsCard";
 import Image from "next/image";
 import { IconLinks } from "./IconLinks";
-
+import { useVault } from "../providers/VaultDataProvider";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
-    onVaultSelect: (address: VaultSelection) => void;
-    selectedVault: string | undefined
+    onVaultSelect: (vault: VaultSelection) => void;
+    selectedVault?: string;
 }
+export default function VaultStats({
+    vaultOptions,
+    onVaultSelect,
+    selectedVault
+}: VaultStatsProps) {
+    const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
+    const [previousValue, setPreviousValue] = useState<number | null>(null);
+    const [lastCheckedPrice, setLastCheckedPrice] = useState<number | null>(null);
 
-export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault }: VaultStatsProps) {
-    const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
-    const [vaultData, setVaultData] = useState<M3M3_VaultData | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     useEffect(() => {
@@ -55,12 +60,14 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
             mounted = false;
             clearInterval(intervalId);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInitialLoad, selectedVault]);
 
     useEffect(() => {
         if (!vaultData?.token_a_mint) return;
 
         let mounted = true;
+        let intervalId: NodeJS.Timeout;
 
         const fetchTokenInfo = async () => {
             try {
@@ -81,11 +88,30 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
         };
 
         fetchTokenInfo();
+        // eslint-disable-next-line prefer-const
+        intervalId = setInterval(fetchTokenInfo, 10000);
 
         return () => {
             mounted = false;
+            clearInterval(intervalId);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInitialLoad, vaultData?.token_a_mint]);
+
+    useEffect(() => {
+        if (tokenData?.tokenPrice) {
+            const currentPrice = Number(tokenData.tokenPrice);
+
+            // Only update previousValue if we have a lastCheckedPrice to compare against
+            if (lastCheckedPrice !== null && currentPrice !== lastCheckedPrice) {
+                setPreviousValue(lastCheckedPrice);
+            }
+
+            // Always update the lastCheckedPrice
+            setLastCheckedPrice(currentPrice);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tokenData?.tokenPrice]);
 
     const vaultRewardsStats = [
         {
@@ -109,7 +135,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
     const tokenStats = [
         {
             label: `${vaultData?.token_a_symbol} USD Price`,
-            value: `$${tokenData?.token_info?.price_info?.price_per_token.toFixed(7)}`,
+            value: `$${tokenData?.tokenPrice}`,
         },
         {
             label: `Market Cap`,
@@ -179,7 +205,7 @@ export default function VaultStats({ vaultOptions, onVaultSelect, selectedVault 
 
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
                                 {tokenStats.map((stat, index) => (
-                                    <StatsCard key={index} label={stat.label} value={stat.value} />
+                                    <StatsCard key={index} label={stat.label} value={stat.value} currentPrice={Number(tokenData?.tokenPrice)} previousValue={previousValue} />
                                 ))}
                             </div>
                         </CardContent>

@@ -33,6 +33,28 @@ export interface M3M3_VaultData {
   top_lists: topList[];
 }
 
+export interface VaultSelection {
+  vault_address: string;
+  token_a_mint: string;
+}
+
+export interface VaultOptions {
+  vault_address: string;
+  token_a_mint: string;
+  token_a_symbol: string;
+  current_reward_usd: number;
+}
+
+export interface WalletData {
+  vault_pubkey: string;
+  wallet_pubkey: string;
+  total_staked_amount: string;
+  total_claimed: {
+    token_a: string;
+    sol: string;
+  };
+}
+
 export interface TokenMetadata {
   id: string;
   content: {
@@ -52,26 +74,5 @@ export interface TokenMetadata {
     supply: number;
     decimals: number;
   };
-}
-export interface VaultSelection {
-  vault_address: string;
-  token_a_mint: string;
-}
-
-export interface VaultOptions {
-  vault_address: string;
-  token_a_mint: string;
-  token_a_symbol: string;
-  current_reward_usd: number;
-}
-
-export interface WalletData {
-  vault_pubkey: string;
-  stake_account: string;
-  wallet_pubkey: string;
-  total_staked_amount: string;
-  total_claimed: {
-    token_a: string;
-    sol: string;
-  };
+  tokenPrice: number;
 }
