@@ -31,28 +31,6 @@ export default function Home() {
     fetchVaults();
   }, []);
 
-  console.log(selectedVault)
-
-  // useEffect(() => {
-  //   if (!walletAddress) return;
-  //   const fetchData = async () => {
-  //     try {
-  //       if (selectedVault?.token_a_mint) {
-  //         const walletData = await getStakingHistory(selectedVault.token_a_mint, walletAddress);
-  //         setWalletStats(walletData);
-  //       }
-  //       console.log(walletStats);
-  //     } catch (error) {
-  //       console.error('Error fetching vaults:', error);
-  //     }
-  //   };
-
-  //   fetchData();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [walletAddress, selectedVault?.token_a_mint]);
-
-  // console.log(walletStats);
-
   return (
     <div className="w-full p-4">
       <div className="w-full max-w-full">
