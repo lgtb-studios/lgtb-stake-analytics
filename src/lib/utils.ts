@@ -36,6 +36,7 @@ export const formatNumberWithCommas = (
   value: number | string | undefined
 ): string => {
   if (!value) return "0";
+
   const number = typeof value === "string" ? parseFloat(value) : value;
 
   return number.toLocaleString("en-US");

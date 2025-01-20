@@ -1,3 +1,4 @@
+'use client'
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Send, Bug, Rss } from "lucide-react";
 import { useRef, useState } from "react";
@@ -15,7 +16,7 @@ import { DialogType } from "@/lib/types";
 import { ReportDialog } from "./ReportDialog";
 import { SupportDialog } from "./SupportDialog";
 import { FollowDialog } from "./FollowDialog";
-
+import { Suprise } from "./Suprise";
 
 export function FloatingActionButton() {
     const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +26,7 @@ export function FloatingActionButton() {
     return (
 
         <div className="hidden md:fixed md:bottom-0 md:right-4 md:block z-50">
+            <Suprise isOpen={isOpen} />
             <Dialog>
                 <div className="relative">
                     <DropdownMenu onOpenChange={(open) => setIsOpen(open)}>

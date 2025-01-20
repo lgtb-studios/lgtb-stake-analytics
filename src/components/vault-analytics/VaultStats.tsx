@@ -30,7 +30,6 @@ export default function VaultStats({
 
     useEffect(() => {
         if (!selectedVault) return;
-
         let mounted = true;
         let intervalId: NodeJS.Timeout;
 
@@ -55,7 +54,6 @@ export default function VaultStats({
         fetchVaultInfo();
         // eslint-disable-next-line prefer-const
         intervalId = setInterval(fetchVaultInfo, 10000);
-
         return () => {
             mounted = false;
             clearInterval(intervalId);
@@ -101,13 +99,9 @@ export default function VaultStats({
     useEffect(() => {
         if (tokenData?.tokenPrice) {
             const currentPrice = Number(tokenData.tokenPrice);
-
-            // Only update previousValue if we have a lastCheckedPrice to compare against
             if (lastCheckedPrice !== null && currentPrice !== lastCheckedPrice) {
                 setPreviousValue(lastCheckedPrice);
             }
-
-            // Always update the lastCheckedPrice
             setLastCheckedPrice(currentPrice);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,8 +133,12 @@ export default function VaultStats({
         },
         {
             label: `Market Cap`,
-            value: `$${formatNumberWithCommas(vaultData?.marketcap)}`,
-        },
+            value: `$${formatNumberWithCommas(
+                tokenData?.token_info?.supply && tokenData?.tokenPrice && tokenData?.token_info?.decimals
+                    ? (Number(tokenData.token_info.supply) / Math.pow(10, tokenData.token_info.decimals)) * tokenData.tokenPrice
+                    : 0
+            )}`,
+        }
     ]
 
     const vaultTokenStats = [
