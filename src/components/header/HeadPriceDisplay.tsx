@@ -48,10 +48,10 @@ export function HeadPriceDisplay({ prices }: { prices: HeadPrices[] }) {
                 <Image
                     src="/solanaLogoMark.svg"
                     alt="Solana"
-                    width={16}
-                    height={16}
+                    width={14}
+                    height={14}
                 />
-                <p className={`mt-[1px] transition-colors duration-200 ${getPriceChangeColor(sortedPrices?.[0]?.price, previousPrices.sol)}`}>
+                <p className={`text-sm font-semibold  transition-colors duration-200 ${getPriceChangeColor(sortedPrices?.[0]?.price, previousPrices.sol)}`}>
                     ${Number(sortedPrices?.[0]?.price).toFixed(2)}
                 </p>
             </Card>
@@ -59,10 +59,10 @@ export function HeadPriceDisplay({ prices }: { prices: HeadPrices[] }) {
                 <Image
                     src="/jup-logo-bright.svg"
                     alt="Jupiter"
-                    width={16}
-                    height={16}
+                    width={14}
+                    height={14}
                 />
-                <p className={`mt-[1px] transition-colors duration-200 ${getPriceChangeColor(sortedPrices?.[1]?.price, previousPrices.jup)}`}>
+                <p className={`text-sm font-semibold  transition-colors duration-200 ${getPriceChangeColor(sortedPrices?.[1]?.price, previousPrices.jup)}`}>
                     ${Number(sortedPrices?.[1]?.price).toFixed(2)}
                 </p>
             </Card>
