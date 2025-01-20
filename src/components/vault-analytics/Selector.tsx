@@ -41,8 +41,8 @@ export function Selector({
     return (
         <Select value={selectedValue} onValueChange={handleSelect}>
             <div className="flex flex-row items-center justify-between">
-                <SelectTrigger>
-                    <SelectValue placeholder="Select a vault">
+                <SelectTrigger className='pr-2'>
+                    <SelectValue placeholder="Select a vault ">
                         {selectedValue ? options.find(opt => opt.vault_address === selectedValue)?.token_a_symbol : "Select a vault"}
                     </SelectValue>
                 </SelectTrigger>
