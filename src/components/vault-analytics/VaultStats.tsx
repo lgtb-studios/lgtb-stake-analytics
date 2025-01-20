@@ -11,6 +11,7 @@ import Image from "next/image";
 import { IconLinks } from "./links-top/IconLinks";
 import { useVault } from "../providers/VaultDataProvider";
 import { HeadPriceDisplay } from "../HeadPriceDisplay";
+import { useActivityDetection } from "@/hooks/useActivityDetection";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
@@ -25,19 +26,21 @@ export default function VaultStats({
     const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
     const [previousValue, setPreviousValue] = useState<number | null>(null);
     const [lastCheckedPrice, setLastCheckedPrice] = useState<number | null>(null);
-
+    const isActive = useActivityDetection(120000);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     useEffect(() => {
         if (!selectedVault) return;
         let mounted = true;
-        let intervalId: NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout | null = null;
 
         const fetchVaultInfo = async () => {
+            if (!isActive) return;
             try {
                 const vault = await getVaultInfo(selectedVault);
                 if (mounted) {
                     setVaultData(vault);
+                    console.log(vault);
                 }
             } catch (error) {
                 console.error("Error fetching vault data:", error);
@@ -45,29 +48,31 @@ export default function VaultStats({
                     setVaultData(null);
                 }
             } finally {
-                if (mounted) {
-                    if (isInitialLoad) setIsInitialLoad(false);
+                if (mounted && isInitialLoad) {
+                    setIsInitialLoad(false);
                 }
             }
         };
 
-        fetchVaultInfo();
-        // eslint-disable-next-line prefer-const
-        intervalId = setInterval(fetchVaultInfo, 10000);
+        if (isActive) {
+            fetchVaultInfo();
+            intervalId = setInterval(fetchVaultInfo, 10000);
+        }
+
         return () => {
             mounted = false;
-            clearInterval(intervalId);
+            if (intervalId) clearInterval(intervalId);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isInitialLoad, selectedVault]);
+    }, [isInitialLoad, selectedVault, isActive]);
 
     useEffect(() => {
         if (!vaultData?.token_a_mint) return;
-
         let mounted = true;
-        let intervalId: NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout | null = null;
 
         const fetchTokenInfo = async () => {
+            if (!isActive) return;
             try {
                 const token = await getTokenMetaData(vaultData.token_a_mint);
                 if (mounted) {
@@ -79,22 +84,23 @@ export default function VaultStats({
                     setTokenData(null);
                 }
             } finally {
-                if (mounted) {
-                    if (isInitialLoad) setIsInitialLoad(false);
+                if (mounted && isInitialLoad) {
+                    setIsInitialLoad(false);
                 }
             }
         };
 
-        fetchTokenInfo();
-        // eslint-disable-next-line prefer-const
-        intervalId = setInterval(fetchTokenInfo, 10000);
+        if (isActive) {
+            fetchTokenInfo();
+            intervalId = setInterval(fetchTokenInfo, 10000);
+        }
 
         return () => {
             mounted = false;
-            clearInterval(intervalId);
+            if (intervalId) clearInterval(intervalId);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isInitialLoad, vaultData?.token_a_mint]);
+    }, [isInitialLoad, vaultData?.token_a_mint, isActive]);
 
     useEffect(() => {
         if (tokenData?.tokenPrice) {

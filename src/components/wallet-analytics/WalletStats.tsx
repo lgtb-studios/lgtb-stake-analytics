@@ -7,6 +7,7 @@ import { StatsCard } from "../StatsCard";
 import { Skeleton } from "../ui/skeleton";
 import { useVault } from "../providers/VaultDataProvider";
 import { calculateStakedValue, formatNumberWithCommas, calculateAPY, removeCommas } from "@/lib/utils";
+import { useActivityDetection } from "@/hooks/useActivityDetection";
 
 export default function WalletStats() {
     const {
@@ -20,10 +21,14 @@ export default function WalletStats() {
         isLoading,
         setIsLoading
     } = useVault();
-
+    const isActive = useActivityDetection(120000);
 
     useEffect(() => {
+        let mounted = true;
+        let intervalId: NodeJS.Timeout | null = null;
+
         const fetchData = async () => {
+            if (!isActive) return;
             setWalletStats(null);
             setIsLoading(true);
 
@@ -35,23 +40,36 @@ export default function WalletStats() {
                         walletAddress,
                         selectedVault
                     );
-                    setWalletStats(walletData);
+                    if (mounted) {
+                        setWalletStats(walletData);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching wallet stats:', error);
-                setWalletStats(null);
+                if (mounted) {
+                    setWalletStats(null);
+                }
             } finally {
-                setIsLoading(false);
+                if (mounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
-        const timeoutId = setTimeout(() => {
-            fetchData();
-        }, 300);
+        if (isActive) {
+            const timeoutId = setTimeout(() => {
+                fetchData();
+                intervalId = setInterval(fetchData, 10000);
+            }, 300);
 
-        return () => clearTimeout(timeoutId);
+            return () => {
+                mounted = false;
+                clearTimeout(timeoutId);
+                if (intervalId) clearInterval(intervalId);
+            };
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletAddress, selectedVault?.token_a_mint, setWalletStats, setIsLoading]);
+    }, [walletAddress, selectedVault?.token_a_mint, setWalletStats, setIsLoading, isActive]);
 
     const stakedData = [
         {
