@@ -5,12 +5,12 @@ import { calculateStakedPercentage, formatNumberWithCommas } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getTokenMetaData } from "@/lib/Web3";
 import { getVaultInfo } from "@/lib/Web3";
-
 import { Selector } from "./Selector";
 import { StatsCard } from "../StatsCard";
 import Image from "next/image";
-import { IconLinks } from "./IconLinks";
+import { IconLinks } from "./links-top/IconLinks";
 import { useVault } from "../providers/VaultDataProvider";
+import { HeadPriceDisplay } from "../HeadPriceDisplay";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
@@ -20,7 +20,7 @@ interface VaultStatsProps {
 export default function VaultStats({
     vaultOptions,
     onVaultSelect,
-    selectedVault
+    selectedVault,
 }: VaultStatsProps) {
     const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
     const [previousValue, setPreviousValue] = useState<number | null>(null);
@@ -163,11 +163,15 @@ export default function VaultStats({
 
     return (
         <div>
-            <Selector
-                options={vaultOptions}
-                placeholder="Select an option"
-                onSelect={onVaultSelect}
-            />
+            <div className="flex row gap-1 justify-end">
+                <HeadPriceDisplay />
+                <Selector
+                    options={vaultOptions}
+                    placeholder="Select an option"
+                    onSelect={onVaultSelect}
+                />
+            </div>
+
             {selectedVault && (isInitialLoad ? (
                 <div>Loading...</div>
             ) : (

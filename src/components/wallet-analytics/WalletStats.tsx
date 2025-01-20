@@ -69,7 +69,7 @@ export default function WalletStats() {
         }
     ];
 
-    if (isLoading || !walletStats) {
+    if (isLoading) {
         return (
             <div className="space-y-2 mt-2">
                 <Card>
@@ -111,6 +111,15 @@ export default function WalletStats() {
             </div>
         );
     }
+
+    if (!walletStats) {
+        return (
+            <div>
+                No staking data found for this wallet.
+            </div>
+        )
+    }
+
 
     return (
         <div className="space-y-2 mt-2">

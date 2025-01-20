@@ -1,6 +1,6 @@
 export type DialogType = "report" | "support" | "follow" | null;
 
-interface topList {
+export interface topList {
   owner: string;
   staked_amount: number;
   token_a_accumulated_reward: number;
