@@ -55,6 +55,11 @@ export interface WalletData {
   };
 }
 
+export interface HeadPrices {
+  key: string;
+  price: string;
+}
+
 export interface TokenMetadata {
   id: string;
   content: {

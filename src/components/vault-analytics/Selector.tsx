@@ -53,7 +53,7 @@ export function Selector({
                         </TooltipTrigger>
                         <TooltipContent>
                             <div className="p-1 text-xs">
-                                Displays a list of vaults that have rewards of $10,000 or more
+                                Displays vaults with $10,000 or more in rewards
                             </div>
                         </TooltipContent>
                     </Tooltip>

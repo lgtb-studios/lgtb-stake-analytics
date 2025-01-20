@@ -1,6 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { config } from "@config/config";
 import {
+  HeadPrices,
   M3M3_VaultData,
   TokenMetadata,
   VaultOptions,
@@ -227,6 +228,30 @@ async function getTokenPrice(mint: string): Promise<number> {
     return data[mint].price;
   } catch (error) {
     console.error("Error fetching token price:", error);
+    throw error;
+  }
+}
+
+export async function getSOLJUPPrice(): Promise<HeadPrices[]> {
+  try {
+    const response = await fetch(
+      "https://api.jup.ag/price/v2?ids=JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN,So11111111111111111111111111111111111111112"
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const { data } = await response.json();
+
+    const prices: HeadPrices[] = Object.entries(data).map(([key, value]) => ({
+      key,
+      price: (value as { price: string }).price,
+    }));
+
+    return prices;
+  } catch (error) {
+    console.error("Error fetching SOL price:", error);
     throw error;
   }
 }

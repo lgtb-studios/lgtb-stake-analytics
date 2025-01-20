@@ -1,3 +1,4 @@
+'use client'
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Send, Bug, Rss } from "lucide-react";
 import { useRef, useState } from "react";
