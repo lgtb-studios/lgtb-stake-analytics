@@ -6,18 +6,21 @@ import { CopyableSpan } from "../CopyClipboard";
 import { StatsCard } from "../StatsCard";
 import { Skeleton } from "../ui/skeleton";
 import { useVault } from "../providers/VaultDataProvider";
-import { calculateStakedValue, formatNumberWithCommas } from "@/lib/utils";
+import { calculateStakedValue, formatNumberWithCommas, calculateAPY, removeCommas } from "@/lib/utils";
 
 export default function WalletStats() {
     const {
         tokenData,
         walletAddress,
         selectedVault,
+        vaultData,
         walletStats,
         setWalletStats,
+        SolPrice,
         isLoading,
         setIsLoading
     } = useVault();
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -60,14 +63,43 @@ export default function WalletStats() {
             value: `$${formatNumberWithCommas(calculateStakedValue(walletStats?.total_staked_amount, tokenData?.tokenPrice))}`
         },
         {
+            label: 'Daily APY',
+            value: `${calculateAPY(
+                Number(vaultData?.total_staked_amount),
+                Number(vaultData?.total_staked_amount_usd),
+                Number(vaultData?.daily_reward_usd),
+                Number(walletStats?.total_staked_amount ? removeCommas(walletStats.total_staked_amount) : 0)
+            ).dailyRate.toFixed(2)}%`
+        },
+        {
+            label: `Yearly APY`,
+            value: `${formatNumberWithCommas(calculateAPY(
+                Number(vaultData?.total_staked_amount),
+                Number(vaultData?.total_staked_amount_usd),
+                Number(vaultData?.daily_reward_usd),
+                Number(walletStats?.total_staked_amount ? removeCommas(walletStats.total_staked_amount) : 0)
+            ).apy.toFixed(2))}%`
+        }
+    ];
+
+    const claimValues = [
+        {
             label: `Total ${tokenData?.content.metadata.symbol} Claimed`,
             value: walletStats?.total_claimed?.token_a
         },
         {
+            label: `${tokenData?.content.metadata.symbol} Current Claim Value`,
+            value: `$${formatNumberWithCommas(calculateStakedValue(walletStats?.total_claimed?.token_a, tokenData?.tokenPrice))}`
+        },
+        {
             label: 'Total SOL Claimed',
             value: walletStats?.total_claimed?.sol
+        },
+        {
+            label: 'SOL Current Claim Value',
+            value: `$${formatNumberWithCommas(calculateStakedValue(walletStats?.total_claimed?.sol, Number(SolPrice)))}`
         }
-    ];
+    ]
 
     if (isLoading) {
         return (
@@ -151,6 +183,38 @@ export default function WalletStats() {
                                 isLoading={false}
                             />
                         ))}
+                        {/* <Card className="bg-muted/50">
+                            <CardContent className="p-2">
+                                <div className="text-xs text-muted-foreground">Daily APY</div>
+                                {isLoading ? (
+                                    <Skeleton className="h-4 w-full mt-1" />
+                                ) : (
+                                    <div className="text-sm font-semibold mt-1">
+                                        {calculateAPY(
+                                            Number(vaultData?.total_staked_amount),
+                                            Number(vaultData?.total_staked_amount_usd),
+                                            Number(vaultData?.daily_reward_usd),
+                                            Number(removeCommas(walletStats?.total_staked_amount))
+                                        ).dailyRate.toFixed(2)}%
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card> */}
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardContent className="p-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2">
+                        {claimValues.map((data, index) => (
+                            <StatsCard
+                                key={index}
+                                label={data.label}
+                                value={data.value}
+                                isLoading={false}
+                            />
+                        ))}
+
                     </div>
                 </CardContent>
             </Card>

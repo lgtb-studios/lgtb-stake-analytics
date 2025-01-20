@@ -103,3 +103,27 @@ export function calculateStakedValue(
 
   return parseFloat((staked * price).toFixed(4));
 }
+
+export function removeCommas(value: string): string {
+  return value.replace(/,/g, "");
+}
+
+export function calculateAPY(
+  totalVaultStake: number,
+  totalVaultStakeUSD: number,
+  VaultDailyUSD: number,
+  userPosition: number
+) {
+  const userShare = userPosition / totalVaultStake;
+  const userStakedUSD = totalVaultStakeUSD * userShare;
+  const userDailyRewardUSD = VaultDailyUSD * userShare;
+  const dailyRate = userDailyRewardUSD / userStakedUSD;
+  const apy = dailyRate * 365 * 100;
+
+  return {
+    userShare: userShare * 100,
+    dailyRate: dailyRate * 100,
+    dailyRewardUSD: userDailyRewardUSD,
+    apy: apy,
+  };
+}

@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Card } from "./ui/card";
 import { useEffect, useMemo, useState } from "react";
 import { getSOLJUPPrice } from "@/lib/Web3";
+import { useVault } from "./providers/VaultDataProvider";
+import React from "react";
 
 function getPriceChangeColor(currentPrice: string, previousPrice: string) {
     if (!previousPrice) return '';
@@ -15,6 +17,7 @@ function getPriceChangeColor(currentPrice: string, previousPrice: string) {
 export function HeadPriceDisplay() {
     const [prices, setPrices] = useState<HeadPrices[]>([]);
     const [previousPrices, setPreviousPrices] = useState<{ [key: string]: string }>({});
+    const { setSolPrice } = useVault();
 
     const sortedPrices = useMemo(() =>
         prices?.sort((a, b) => {
@@ -47,6 +50,12 @@ export function HeadPriceDisplay() {
             clearInterval(intervalId);
         };
     }, []);
+
+    useEffect(() => {
+        if (sortedPrices?.[0]?.price) {
+            setSolPrice(Number(sortedPrices[0].price));
+        }
+    }, [sortedPrices, setSolPrice]);
 
     useEffect(() => {
         if (sortedPrices?.length) {

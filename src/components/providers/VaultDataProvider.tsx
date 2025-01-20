@@ -14,6 +14,8 @@ interface VaultDataContextType {
     setVaultData: (data: M3M3_VaultData | null) => void;
     walletStats: WalletData | null;
     setWalletStats: (stats: WalletData | null) => void;
+    SolPrice: number | null;
+    setSolPrice: (price: number | null) => void;
     isLoading: boolean;
     setIsLoading: (loading: boolean) => void;
     resetWalletAddress: () => void;
@@ -25,6 +27,7 @@ const initialState = {
     walletAddress: '',
     tokenData: null,
     selectedVault: null,
+    SolPrice: null,
     vaultData: null,
     walletStats: null,
     isLoading: false,
@@ -56,6 +59,9 @@ export function VaultProvider({
     const [walletStats, setWalletStats] = useState<WalletData | null>(
         initialData.walletStats ?? null
     );
+    const [SolPrice, setSolPrice] = useState<number | null>(
+        initialData.SolPrice ?? null
+    );
     const [isLoading, setIsLoading] = useState(
         initialData.isLoading ?? false
     );
@@ -80,6 +86,8 @@ export function VaultProvider({
         setSelectedVault,
         setWalletAddress,
         setWalletStats,
+        SolPrice,
+        setSolPrice,
         setIsLoading,
         resetWalletData,
         resetWalletAddress
@@ -90,6 +98,7 @@ export function VaultProvider({
         isLoading,
         tokenData,
         vaultData,
+        SolPrice
     ]);
 
     return (
