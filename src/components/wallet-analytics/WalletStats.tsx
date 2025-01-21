@@ -23,6 +23,7 @@ export default function WalletStats() {
     } = useVault();
     const isActive = useActivityDetection(120000);
 
+
     useEffect(() => {
         let mounted = true;
         let intervalId: NodeJS.Timeout | null = null;
@@ -31,8 +32,6 @@ export default function WalletStats() {
             if (!isActive) return;
             setWalletStats(null);
             setIsLoading(true);
-
-            await new Promise(resolve => setTimeout(resolve, 500));
 
             try {
                 if (selectedVault?.token_a_mint && walletAddress) {
@@ -55,19 +54,30 @@ export default function WalletStats() {
                 }
             }
         };
+        fetchData();
 
         if (isActive) {
-            const timeoutId = setTimeout(() => {
-                fetchData();
-                intervalId = setInterval(fetchData, 10000);
-            }, 300);
-
-            return () => {
-                mounted = false;
-                clearTimeout(timeoutId);
-                if (intervalId) clearInterval(intervalId);
-            };
+            intervalId = setInterval(async () => {
+                if (selectedVault?.token_a_mint && walletAddress) {
+                    try {
+                        const walletData = await getEscrowAccont(
+                            walletAddress,
+                            selectedVault
+                        );
+                        if (mounted) {
+                            setWalletStats(walletData);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching wallet stats:', error);
+                    }
+                }
+            }, 10000);
         }
+
+        return () => {
+            mounted = false;
+            if (intervalId) clearInterval(intervalId);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [walletAddress, selectedVault?.token_a_mint, setWalletStats, setIsLoading, isActive]);
 
