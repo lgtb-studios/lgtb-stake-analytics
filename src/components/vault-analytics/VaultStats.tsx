@@ -12,6 +12,7 @@ import { IconLinks } from "./links-top/IconLinks";
 import { useVault } from "../providers/VaultDataProvider";
 import { HeadPriceDisplay } from "../HeadPriceDisplay";
 import { useActivityDetection } from "@/hooks/useActivityDetection";
+import { PercentChart } from "../charts/PercentChart";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
@@ -40,7 +41,6 @@ export default function VaultStats({
                 const vault = await getVaultInfo(selectedVault);
                 if (mounted) {
                     setVaultData(vault);
-                    console.log(vault);
                 }
             } catch (error) {
                 console.error("Error fetching vault data:", error);
@@ -113,7 +113,7 @@ export default function VaultStats({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenData?.tokenPrice]);
 
-    const vaultRewardsStats = [
+    const tokenRewardStats = [
         {
             label: `${vaultData?.token_a_symbol} Rewards USD`,
             value: `$${formatNumberWithCommas(vaultData?.current_reward_token_a_usd.toFixed(4))}`,
@@ -122,6 +122,9 @@ export default function VaultStats({
             label: `${vaultData?.token_b_symbol} Rewards USD`,
             value: `$${formatNumberWithCommas(vaultData?.current_reward_token_b_usd.toFixed(4))}`,
         },
+    ]
+
+    const vaultRewardsStats = [
         {
             label: `Total USD Rewards`,
             value: `$${formatNumberWithCommas(vaultData?.current_reward_usd.toFixed(2))}`,
@@ -155,14 +158,6 @@ export default function VaultStats({
         {
             label: `Total Staked USD`,
             value: `$${formatNumberWithCommas(vaultData?.total_staked_amount_usd.toFixed(2))}`,
-        },
-        {
-            label: `Total Staked Percentage`,
-            value: `${calculateStakedPercentage(
-                Number(vaultData?.total_staked_amount),
-                Number(tokenData?.token_info?.supply),
-                tokenData?.token_info?.decimals,
-                2)}%`,
         },
     ]
 
@@ -218,29 +213,50 @@ export default function VaultStats({
                             </div>
                         </CardContent>
                     </Card>
-
                     <Card>
                         <CardHeader className="p-2">
                             <CardTitle className="text-lg">Vault Metrics</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                                {vaultTokenStats.map((stat, index) => (
-                                    <StatsCard key={index} label={stat.label} value={stat.value} />
-                                ))}
+                        <CardContent className="p-2 space-y-2">
+                            <div className="flex flex-col lg:flex-row gap-2">
+                                <div>
+                                    <PercentChart
+                                        label="Staked"
+                                        value={Number(calculateStakedPercentage(
+                                            Number(vaultData?.total_staked_amount),
+                                            Number(tokenData?.token_info?.supply),
+                                            tokenData?.token_info?.decimals,
+                                            2
+                                        ))}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                    {vaultTokenStats.map((stat, index) => (
+                                        <StatsCard
+                                            key={index}
+                                            label={stat.label}
+                                            value={stat.value}
+                                        />
+                                    ))}
+                                    {tokenRewardStats.map((stat, index) => (
+                                        <StatsCard
+                                            key={index}
+                                            label={stat.label}
+                                            value={stat.value}
+                                        />
+                                    ))}
+                                    {vaultRewardsStats.map((stat, index) => (
+                                        <StatsCard
+                                            key={index}
+                                            label={stat.label}
+                                            value={stat.value}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardContent className="p-2">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                                {vaultRewardsStats.map((stat, index) => (
-                                    <StatsCard key={index} label={stat.label} value={stat.value} />
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
                 </div>
 
             ))}

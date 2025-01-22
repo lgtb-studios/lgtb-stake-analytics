@@ -46,6 +46,7 @@ export async function POST(request: Request) {
               ),
               sol: formatTokenAmount(Number(decoded.feeBClaimedAmount), 9),
             },
+            inTopList: decoded.inTopList,
           };
         }
         return undefined;

@@ -53,6 +53,7 @@ export interface WalletData {
     token_a: string;
     sol: string;
   };
+  inTopList: number;
 }
 
 export interface HeadPrices {

@@ -23,7 +23,6 @@ export default function WalletStats() {
     } = useVault();
     const isActive = useActivityDetection(120000);
 
-
     useEffect(() => {
         let mounted = true;
         let intervalId: NodeJS.Timeout | null = null;
@@ -92,21 +91,21 @@ export default function WalletStats() {
         },
         {
             label: 'Daily APY',
-            value: `${calculateAPY(
+            value: walletStats?.inTopList ? `${calculateAPY(
                 Number(vaultData?.total_staked_amount),
                 Number(vaultData?.total_staked_amount_usd),
                 Number(vaultData?.daily_reward_usd),
                 Number(walletStats?.total_staked_amount ? removeCommas(walletStats.total_staked_amount) : 0)
-            ).dailyRate.toFixed(2)}%`
+            ).dailyRate.toFixed(2)}%` : 'Not Earning'
         },
         {
             label: `Yearly APY`,
-            value: `${formatNumberWithCommas(calculateAPY(
+            value: walletStats?.inTopList ? `${formatNumberWithCommas(calculateAPY(
                 Number(vaultData?.total_staked_amount),
                 Number(vaultData?.total_staked_amount_usd),
                 Number(vaultData?.daily_reward_usd),
                 Number(walletStats?.total_staked_amount ? removeCommas(walletStats.total_staked_amount) : 0)
-            ).apy.toFixed(2))}%`
+            ).apy.toFixed(2))}%` : 'Not Earning'
         }
     ];
 
@@ -179,7 +178,6 @@ export default function WalletStats() {
             </div>
         )
     }
-
 
     return (
         <div className="space-y-2 mt-2">
