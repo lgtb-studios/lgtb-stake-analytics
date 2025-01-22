@@ -4,6 +4,9 @@ import Image from "next/image";
 import { Card } from "./ui/card";
 import { useEffect, useMemo, useState } from "react";
 import { getSOLJUPPrice } from "@/lib/Web3";
+import { useVault } from "./providers/VaultDataProvider";
+import React from "react";
+import { useActivityDetection } from "@/hooks/useActivityDetection";
 
 function getPriceChangeColor(currentPrice: string, previousPrice: string) {
     if (!previousPrice) return '';
@@ -15,6 +18,8 @@ function getPriceChangeColor(currentPrice: string, previousPrice: string) {
 export function HeadPriceDisplay() {
     const [prices, setPrices] = useState<HeadPrices[]>([]);
     const [previousPrices, setPreviousPrices] = useState<{ [key: string]: string }>({});
+    const { setSolPrice } = useVault();
+    const isActive = useActivityDetection(120000);
 
     const sortedPrices = useMemo(() =>
         prices?.sort((a, b) => {
@@ -27,26 +32,36 @@ export function HeadPriceDisplay() {
 
     useEffect(() => {
         const mounted = { current: true };
+        let intervalId: NodeJS.Timeout | null = null;
 
         const fetchPrices = async () => {
+            if (!isActive) return;
             try {
                 const priceData = await getSOLJUPPrice();
-                if (mounted) {
+                if (mounted.current) {
                     setPrices(priceData || []);
                 }
-
             } catch (error) {
-                console.error('Error fetching vaults:', error);
+                console.error('Error fetching prices:', error);
             }
         };
-        fetchPrices();
-        const intervalId = setInterval(fetchPrices, 5000);
+
+        if (isActive) {
+            fetchPrices();
+            intervalId = setInterval(fetchPrices, 5000);
+        }
 
         return () => {
             mounted.current = false;
-            clearInterval(intervalId);
+            if (intervalId) clearInterval(intervalId);
         };
-    }, []);
+    }, [isActive]);
+
+    useEffect(() => {
+        if (sortedPrices?.[0]?.price) {
+            setSolPrice(Number(sortedPrices[0].price));
+        }
+    }, [sortedPrices, setSolPrice]);
 
     useEffect(() => {
         if (sortedPrices?.length) {

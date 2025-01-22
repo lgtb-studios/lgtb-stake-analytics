@@ -5,12 +5,11 @@ import { useForm } from "react-hook-form"
 import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+//import { Switch } from './ui/switch';
 
 const isSolanaAddress = (address: string) => {
     try {
-
         return address.length >= 32 && address.length <= 44;
-
     } catch {
         return false;
     }
@@ -40,27 +39,35 @@ export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) =
         onSubmit(values.address);
         form.reset();
     };
+    //Not sure if I should implement this
+    // const Lockwallet = () => {
+    //     console.log("Lock wallet")
+    // }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex space-x-4 mt-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex space-x-2 mt-4">
                 <FormField
                     control={form.control}
                     name="address"
                     render={({ field }) => (
-                        <FormItem className="flex-1">
+                        <FormItem className="flex-1 ">
                             <FormControl>
                                 <Input
                                     placeholder={`Enter ${label} address`}
                                     {...field}
-                                    className="h-full text-theme-color"
+                                    className="h-9 text-theme-color"
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="h-full">Check</Button>
+                <Button type="submit" className="h-9">Check</Button>
+                {/* <div className='h-10'>
+                    <p className='text-xs text-center font-bold'>Lock</p>
+                    <Switch checked onCheckedChange={Lockwallet} />
+                </div> */}
             </form>
         </Form>
     );

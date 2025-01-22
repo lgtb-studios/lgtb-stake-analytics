@@ -1,5 +1,3 @@
-import { PublicKey } from "@solana/web3.js";
-import { config } from "@config/config";
 import {
   HeadPrices,
   M3M3_VaultData,
@@ -8,41 +6,6 @@ import {
   VaultSelection,
   WalletData,
 } from "./types";
-import { Connection } from "@solana/web3.js";
-import { formatTokenAmount } from "./utils";
-import { StakeEscrow } from "./Models";
-import { m3m3_PROGRAM_ID } from "./utils";
-
-// const LGTB_TOKEN_MINT_ADDRESS = new PublicKey(
-//   "2vFYpCh2yJhHphft1Z4XHdafEhj6XksyhFyH9tvTdKqf"
-// );
-
-// const TEST_WALLET = new PublicKey(
-//   "6U3XNWQdwEjz6nXBNMqk4kx2xNqvmauUgtRFeD9ESzQD"
-// );
-// const LGTB_VAULT_ADDRESS = new PublicKey('ZxuHhk6X1nBP3A7vLPYrUSugsbxtCAqk5sm3W7eGFNk');
-
-// const DYNAMIC_AMM_PROGRAM_ID = new PublicKey(
-//   "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
-// );
-
-// const DYNAMIC_VAULT_PROGRAM_ID = new PublicKey(
-//   "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
-// );
-
-// const METEORA_STAKING_PROGRAM_ID = new PublicKey(
-//   "STK9HV9eCirYp3PSGwqGzuoEH7UBVkuLjQxmRt7yUT7"
-// );
-
-// const LGTB_POOL_ADDRESS = new PublicKey(
-//   "HkkjwRtgtqepZd2uEZcmBoWK7JkxBVWCfXpq1GzLoToT"
-// );
-
-// const api_key = config.solana.apiKey;
-export const connection = new Connection(
-  config.solana.mainnet as string,
-  "confirmed"
-);
 
 export async function getVaults(): Promise<VaultOptions[]> {
   try {
@@ -113,29 +76,19 @@ export async function getVaultInfo(
 
 export async function getTokenMetaData(mint?: string): Promise<TokenMetadata> {
   try {
-    const response = await fetch(config.solana.mainnet as string, {
+    const response = await fetch("/api/token/metadata", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "my-id",
-        method: "getAsset",
-        params: [mint],
-      }),
+      body: JSON.stringify({ mint }),
     });
-    const data = await response.json();
-    const tokenPrice = await getTokenPrice(mint as string);
 
-    if (!data.result) {
-      throw new Error("No result in API response");
+    if (!response.ok) {
+      throw new Error("Failed to fetch token metadata");
     }
 
-    return {
-      ...data.result,
-      tokenPrice: tokenPrice,
-    };
+    return await response.json();
   } catch (error) {
     console.error("Error fetching token metadata:", error);
     throw error;
@@ -147,51 +100,21 @@ export async function getEscrowAccont(
   selectedVault: VaultSelection
 ): Promise<WalletData> {
   try {
-    console.log("Searching for wallet:", wallet);
-    console.log("selectedVault:", selectedVault);
-    const accounts = await connection.getProgramAccounts(m3m3_PROGRAM_ID, {
-      filters: [
-        {
-          memcmp: {
-            offset: 8,
-            bytes: wallet,
-          },
-        },
-      ],
+    const response = await fetch("/api/escrow", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ wallet, selectedVault }),
     });
 
-    console.log("Found accounts:", accounts.length);
-    const tokenADecimals = await getTokenDecimals(
-      new PublicKey(selectedVault.token_a_mint)
-    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch escrow data");
+    }
 
-    const returnData: WalletData[] = accounts
-      .map(({ account }) => {
-        const decoded = StakeEscrow.decode(account.data);
-        if (decoded.vault.equals(new PublicKey(selectedVault.vault_address))) {
-          return {
-            wallet_pubkey: wallet,
-            vault_pubkey: decoded.vault.toBase58(),
-            total_staked_amount: formatTokenAmount(
-              Number(decoded.stakeAmount),
-              tokenADecimals
-            ),
-            total_claimed: {
-              token_a: formatTokenAmount(
-                Number(decoded.feeAClaimedAmount),
-                tokenADecimals
-              ),
-              sol: formatTokenAmount(Number(decoded.feeBClaimedAmount), 9),
-            },
-          };
-        }
-        return undefined;
-      })
-      .filter((data): data is WalletData => data !== undefined);
-
-    return returnData[0];
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching staking history:", error);
+    console.error("Error fetching escrow data:", error);
     throw error;
   }
 }
@@ -216,41 +139,6 @@ export async function getSOLJUPPrice(): Promise<HeadPrices[]> {
     return prices;
   } catch (error) {
     console.error("Error fetching SOL price:", error);
-    throw error;
-  }
-}
-async function getTokenDecimals(mint: PublicKey): Promise<number> {
-  const tokenInfo = await connection.getParsedAccountInfo(mint);
-
-  if (tokenInfo.value && tokenInfo.value.data) {
-    const data = tokenInfo.value.data as {
-      parsed: { info: { decimals: number } };
-    };
-    if (
-      data.parsed &&
-      data.parsed.info &&
-      typeof data.parsed.info.decimals === "number"
-    ) {
-      return data.parsed.info.decimals;
-    }
-  }
-
-  return 9;
-}
-
-async function getTokenPrice(mint: string): Promise<number> {
-  try {
-    const response = await fetch(`https://api.jup.ag/price/v2?ids=${mint}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const { data } = await response.json();
-
-    return data[mint].price;
-  } catch (error) {
-    console.error("Error fetching token price:", error);
     throw error;
   }
 }
