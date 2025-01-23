@@ -1,6 +1,5 @@
 'use client'
 import { Card, CardContent, CardTitle } from "../ui/card"
-import { useEffect } from "react";
 import { getEscrowAccont } from "@/lib/Web3";
 import { CopyableSpan } from "../CopyClipboard";
 import { StatsCard } from "../StatsCard";
@@ -8,6 +7,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useVault } from "../providers/VaultDataProvider";
 import { calculateStakedValue, formatNumberWithCommas, calculateAPY, removeCommas } from "@/lib/utils";
 import { useActivityDetection } from "@/hooks/useActivityDetection";
+import { useEffect } from "react";
 
 export default function WalletStats() {
     const {
