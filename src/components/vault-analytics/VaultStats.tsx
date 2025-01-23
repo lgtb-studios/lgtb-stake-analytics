@@ -13,6 +13,8 @@ import { useVault } from "../providers/VaultDataProvider";
 import { HeadPriceDisplay } from "../HeadPriceDisplay";
 import { useActivityDetection } from "@/hooks/useActivityDetection";
 import { PercentChart } from "../charts/PercentChart";
+import { ImageSkeleton } from "../skeletons/ImageSkeleton";
+import { set } from "react-hook-form";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[];
@@ -181,13 +183,17 @@ export default function VaultStats({
                         <CardContent className="p-2 relative">
                             <div className="flex justify-between">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                    <Image
-                                        src={tokenData?.content.links.image || '/default-image.png'}
-                                        alt={tokenData?.content.metadata.name || 'Default Alt Text'}
-                                        width={100}
-                                        height={100}
-                                        className="w-16 h-16 rounded-full"
-                                    />
+                                    {!tokenData?.content.links.image
+                                        ? <ImageSkeleton style="w-16 h-16 rounded-full animate-pulse text-primary" />
+                                        : <Image
+                                            src={tokenData?.content.links.image || '/default-image.png'}
+                                            alt={tokenData?.content.metadata.name || 'Default Alt Text'}
+                                            width={100}
+                                            height={100}
+                                            className="w-16 h-16 rounded-full"
+                                        />
+                                    }
+
                                     <div>
                                         <CardTitle className="text-lg">
                                             {tokenData?.content.metadata.name}
