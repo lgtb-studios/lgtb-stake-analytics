@@ -6,7 +6,6 @@ import { getVaults } from "@/lib/Web3";
 import { VaultOptions, VaultSelection } from "@/lib/types";
 import WalletStats from "@/components/wallet-analytics/WalletStats";
 import { useVault } from '@/components/providers/VaultDataProvider';
-import { useActivityDetection } from "@/hooks/useActivityDetection";
 
 export default function Home() {
   const {
@@ -18,7 +17,6 @@ export default function Home() {
     resetWalletAddress
   } = useVault();
   const [vaults, setVaults] = useState<VaultOptions[]>([]);
-  const isActive = useActivityDetection(120000);
 
   const handleAddressSubmit = (address: string) => {
     setWalletAddress(address);
@@ -31,31 +29,17 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const mounted = { current: true };
-    let intervalId: NodeJS.Timeout | null = null;
-
     const fetchVaults = async () => {
-      if (!isActive) return;
       try {
         const vaultsData = await getVaults();
-        if (mounted.current) {
-          setVaults(vaultsData || []);
-        }
+        setVaults(vaultsData || []);
       } catch (error) {
         console.error('Error fetching vaults:', error);
       }
     };
 
-    if (isActive) {
-      fetchVaults();
-      intervalId = setInterval(fetchVaults, 5000);
-    }
-
-    return () => {
-      mounted.current = false;
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isActive]);
+    fetchVaults();
+  }, []);
 
   return (
     <div className="w-full p-4">

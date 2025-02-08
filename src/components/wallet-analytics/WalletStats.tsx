@@ -1,13 +1,12 @@
 'use client'
 import { Card, CardContent, CardTitle } from "../ui/card"
-import { getEscrowAccont } from "@/lib/Web3";
 import { CopyableSpan } from "../CopyClipboard";
 import { StatsCard } from "../StatsCard";
 import { Skeleton } from "../ui/skeleton";
 import { useVault } from "../providers/VaultDataProvider";
 import { calculateStakedValue, formatNumberWithCommas, calculateAPY, removeCommas } from "@/lib/utils";
-import { useActivityDetection } from "@/hooks/useActivityDetection";
 import { useEffect } from "react";
+import { useFetchWalletEscrowData } from "@/hooks/fetchers";
 
 export default function WalletStats() {
     const {
@@ -19,66 +18,14 @@ export default function WalletStats() {
         setWalletStats,
         SolPrice,
         isLoading,
-        setIsLoading
     } = useVault();
-    const isActive = useActivityDetection(120000);
+    const { data } = useFetchWalletEscrowData(walletAddress, selectedVault, tokenData?.token_info?.decimals);
 
     useEffect(() => {
-        let mounted = true;
-        let intervalId: NodeJS.Timeout | null = null;
-
-        const fetchData = async () => {
-            if (!isActive) return;
-            setWalletStats(null);
-            setIsLoading(true);
-
-            try {
-                if (selectedVault?.token_a_mint && walletAddress) {
-                    const walletData = await getEscrowAccont(
-                        walletAddress,
-                        selectedVault
-                    );
-                    if (mounted) {
-                        setWalletStats(walletData);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching wallet stats:', error);
-                if (mounted) {
-                    setWalletStats(null);
-                }
-            } finally {
-                if (mounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-        fetchData();
-
-        if (isActive) {
-            intervalId = setInterval(async () => {
-                if (selectedVault?.token_a_mint && walletAddress) {
-                    try {
-                        const walletData = await getEscrowAccont(
-                            walletAddress,
-                            selectedVault
-                        );
-                        if (mounted) {
-                            setWalletStats(walletData);
-                        }
-                    } catch (error) {
-                        console.error('Error fetching wallet stats:', error);
-                    }
-                }
-            }, 10000);
+        if (data) {
+            setWalletStats(data);
         }
-
-        return () => {
-            mounted = false;
-            if (intervalId) clearInterval(intervalId);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletAddress, selectedVault?.token_a_mint, setWalletStats, setIsLoading, isActive]);
+    }, [data, setWalletStats]);
 
     const stakedData = [
         {

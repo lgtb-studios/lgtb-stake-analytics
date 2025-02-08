@@ -81,4 +81,5 @@ export interface TokenMetadata {
     decimals: number;
   };
   tokenPrice: number;
+  holderCount: number;
 }

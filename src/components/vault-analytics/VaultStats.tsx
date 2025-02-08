@@ -3,7 +3,6 @@ import { VaultOptions, VaultSelection } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { calculateStakedPercentage, formatNumberWithCommas } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { getTokenMetaData } from "@/lib/Web3";
 import { getVaultInfo } from "@/lib/Web3";
 import { Selector } from "./Selector";
 import { StatsCard } from "../StatsCard";
@@ -14,10 +13,10 @@ import { HeadPriceDisplay } from "../HeadPriceDisplay";
 import { useActivityDetection } from "@/hooks/useActivityDetection";
 import { PercentChart } from "../charts/PercentChart";
 import { ImageSkeleton } from "../skeletons/ImageSkeleton";
-import { set } from "react-hook-form";
+import { useFetchTokenMetadataAndPrice } from "@/hooks/fetchers";
 
 interface VaultStatsProps {
-    vaultOptions: VaultOptions[];
+    vaultOptions: VaultOptions[] | undefined;
     onVaultSelect: (vault: VaultSelection) => void;
     selectedVault?: string;
 }
@@ -28,6 +27,7 @@ export default function VaultStats({
 }: VaultStatsProps) {
     const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
     const [previousValue, setPreviousValue] = useState<number | null>(null);
+    const { data } = useFetchTokenMetadataAndPrice(vaultData?.token_a_mint || '');
     const [lastCheckedPrice, setLastCheckedPrice] = useState<number | null>(null);
     const isActive = useActivityDetection(120000);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -69,40 +69,9 @@ export default function VaultStats({
     }, [isInitialLoad, selectedVault, isActive]);
 
     useEffect(() => {
-        if (!vaultData?.token_a_mint) return;
-        let mounted = true;
-        let intervalId: NodeJS.Timeout | null = null;
-
-        const fetchTokenInfo = async () => {
-            if (!isActive) return;
-            try {
-                const token = await getTokenMetaData(vaultData.token_a_mint);
-                if (mounted) {
-                    setTokenData(token);
-                }
-            } catch (error) {
-                console.error("Error fetching token data:", error);
-                if (mounted) {
-                    setTokenData(null);
-                }
-            } finally {
-                if (mounted && isInitialLoad) {
-                    setIsInitialLoad(false);
-                }
-            }
-        };
-
-        if (isActive) {
-            fetchTokenInfo();
-            intervalId = setInterval(fetchTokenInfo, 10000);
-        }
-
-        return () => {
-            mounted = false;
-            if (intervalId) clearInterval(intervalId);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isInitialLoad, vaultData?.token_a_mint, isActive]);
+        if (!data) return;
+        setTokenData(data);
+    }, [data, setTokenData]);
 
     useEffect(() => {
         if (tokenData?.tokenPrice) {
