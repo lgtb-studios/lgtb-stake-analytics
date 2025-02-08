@@ -53,6 +53,7 @@ export interface WalletData {
     token_a: string;
     sol: string;
   };
+  inTopList: number;
 }
 
 export interface HeadPrices {
@@ -80,4 +81,5 @@ export interface TokenMetadata {
     decimals: number;
   };
   tokenPrice: number;
+  holderCount: number;
 }

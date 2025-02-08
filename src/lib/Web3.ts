@@ -1,11 +1,4 @@
-import {
-  HeadPrices,
-  M3M3_VaultData,
-  TokenMetadata,
-  VaultOptions,
-  VaultSelection,
-  WalletData,
-} from "./types";
+import { M3M3_VaultData, VaultOptions } from "./types";
 
 export async function getVaults(): Promise<VaultOptions[]> {
   try {
@@ -70,75 +63,6 @@ export async function getVaultInfo(
     return data;
   } catch (error) {
     console.error("Error fetching vault info:", error);
-    throw error;
-  }
-}
-
-export async function getTokenMetaData(mint?: string): Promise<TokenMetadata> {
-  try {
-    const response = await fetch("/api/token/metadata", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ mint }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch token metadata");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching token metadata:", error);
-    throw error;
-  }
-}
-
-export async function getEscrowAccont(
-  wallet: string,
-  selectedVault: VaultSelection
-): Promise<WalletData> {
-  try {
-    const response = await fetch("/api/escrow", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ wallet, selectedVault }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch escrow data");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching escrow data:", error);
-    throw error;
-  }
-}
-
-export async function getSOLJUPPrice(): Promise<HeadPrices[]> {
-  try {
-    const response = await fetch(
-      "https://api.jup.ag/price/v2?ids=JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN,So11111111111111111111111111111111111111112"
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const { data } = await response.json();
-
-    const prices: HeadPrices[] = Object.entries(data).map(([key, value]) => ({
-      key,
-      price: (value as { price: string }).price,
-    }));
-
-    return prices;
-  } catch (error) {
-    console.error("Error fetching SOL price:", error);
     throw error;
   }
 }

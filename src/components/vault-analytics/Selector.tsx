@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/tooltip"
 
 interface SearchableSelectorProps {
-    options: VaultOptions[]
+    options: VaultOptions[] | undefined
     placeholder?: string
     onSelect: (value: VaultSelection) => void
 }

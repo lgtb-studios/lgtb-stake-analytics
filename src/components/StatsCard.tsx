@@ -27,7 +27,7 @@ export function StatsCard({ label, value, isLoading, currentPrice, previousValue
     return 'text-sm font-semibold mt-1';
   };
   return (
-    <Card className="bg-muted/50">
+    <Card className="bg-muted/50 h-fit">
       <CardContent className="p-2">
         <div className="text-xs text-muted-foreground">{label}</div>
         {isLoading ? (
