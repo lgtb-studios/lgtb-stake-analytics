@@ -15,4 +15,15 @@ jobs:
           node-version: "20"
           cache: "pnpm"
       - run: pnpm install
-      - run: pnpm build
+
+      # TypeScript compilation check
+      - name: Type Check
+        run: pnpm tsc --noEmit
+
+      # ESLint check
+      - name: Lint
+        run: pnpm lint
+
+      # Build process
+      - name: Build
+        run: pnpm build
