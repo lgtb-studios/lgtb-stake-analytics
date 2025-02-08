@@ -1,6 +1,6 @@
 import { ESCROW, PRICES, PRICES_SOLJUP } from "@/lib/routes";
 import { HeadPrices, VaultSelection } from "@/lib/types";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import axios from "axios";
 import { useActivityDetection } from "./useActivityDetection";
 
@@ -40,9 +40,13 @@ export function useFetchTokenMetadataAndPrice(mint: string) {
     },
     {
       refreshInterval: isActive ? 16000 : 0,
-      revalidateIfStale: true,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateOnMount: true,
+      dedupingInterval: 16000,
+      keepPreviousData: true,
+      isPaused: () => !isActive,
     }
   );
 
@@ -50,6 +54,7 @@ export function useFetchTokenMetadataAndPrice(mint: string) {
     data,
     isLoading,
     error,
+    mutate,
   };
 }
 

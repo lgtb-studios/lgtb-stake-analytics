@@ -27,7 +27,7 @@ export default function VaultStats({
 }: VaultStatsProps) {
     const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
     const [previousValue, setPreviousValue] = useState<number | null>(null);
-    const { data } = useFetchTokenMetadataAndPrice(vaultData?.token_a_mint || '');
+    const { data, isLoading } = useFetchTokenMetadataAndPrice(vaultData?.token_a_mint || '');
     const [lastCheckedPrice, setLastCheckedPrice] = useState<number | null>(null);
     const isActive = useActivityDetection(120000);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -69,9 +69,14 @@ export default function VaultStats({
     }, [isInitialLoad, selectedVault, isActive]);
 
     useEffect(() => {
-        if (!data) return;
-        setTokenData(data);
-    }, [data, setTokenData]);
+        if (!data) {
+            setTokenData(null);
+            return;
+        }
+        if (JSON.stringify(data) !== JSON.stringify(tokenData)) {
+            setTokenData(data);
+        }
+    }, [data, setTokenData, tokenData]);
 
     useEffect(() => {
         if (tokenData?.tokenPrice) {
@@ -144,7 +149,7 @@ export default function VaultStats({
                 />
             </div>
 
-            {selectedVault && (isInitialLoad ? (
+            {selectedVault && (isInitialLoad || isLoading ? (
                 <div>Loading...</div>
             ) : (
                 <div className="space-y-2 mt-2">
@@ -155,6 +160,7 @@ export default function VaultStats({
                                     {!tokenData?.content.links.image
                                         ? <ImageSkeleton style="w-16 h-16 rounded-full animate-pulse text-primary" />
                                         : <Image
+                                            key={tokenData?.content.links.image}
                                             src={tokenData?.content.links.image || '/default-image.png'}
                                             alt={tokenData?.content.metadata.name || 'Default Alt Text'}
                                             width={100}
@@ -180,12 +186,27 @@ export default function VaultStats({
                                         className="absolute right-0 top-1"
                                     />)}
                             </div>
-
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
+                                {isLoading ? (
+                                    // Show skeleton loaders for stats
+                                    <div>Loading stats...</div>
+                                ) : (
+                                    tokenStats.map((stat, index) => (
+                                        <StatsCard
+                                            key={index}
+                                            label={stat.label}
+                                            value={stat.value}
+                                            currentPrice={Number(tokenData?.tokenPrice)}
+                                            previousValue={previousValue}
+                                        />
+                                    ))
+                                )}
+                            </div>
+                            {/* <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
                                 {tokenStats.map((stat, index) => (
                                     <StatsCard key={index} label={stat.label} value={stat.value} currentPrice={Number(tokenData?.tokenPrice)} previousValue={previousValue} />
                                 ))}
-                            </div>
+                            </div> */}
                         </CardContent>
                     </Card>
                     <Card>
