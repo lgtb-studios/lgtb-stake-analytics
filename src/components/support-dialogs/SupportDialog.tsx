@@ -8,7 +8,7 @@ import { CopyableSpan } from "../CopyClipboard";
 
 export function SupportDialog() {
     return (
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent>
             <DialogHeader className="space-y-4">
                 <DialogTitle className="text-xl sm:text-2xl text-center">
                     Support Development & Maintenance
