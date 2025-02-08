@@ -1,7 +1,8 @@
 import axios from "axios";
 import { config } from "@config/config";
 
-const API_BASE_URL = "http://localhost:3333";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_LGTB_API_URL || "http://localhost:3333";
 
 export const LgtbClient = axios.create({
   baseURL: API_BASE_URL,
