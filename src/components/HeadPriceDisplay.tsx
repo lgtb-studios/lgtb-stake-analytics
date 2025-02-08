@@ -18,7 +18,7 @@ export function HeadPriceDisplay() {
     const [prices, setPrices] = useState<HeadPrices[]>([]);
     const [previousPrices, setPreviousPrices] = useState<{ [key: string]: string }>({});
     const { setSolPrice } = useVault();
-    const { data } = useFetchSOLJUPPrice(5000);
+    const { data } = useFetchSOLJUPPrice();
 
     const sortedPrices = useMemo(() =>
         prices?.sort((a, b) => {

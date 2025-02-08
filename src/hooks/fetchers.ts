@@ -4,7 +4,7 @@ import useSWR from "swr";
 import axios from "axios";
 import { useActivityDetection } from "./useActivityDetection";
 
-export function useFetchSOLJUPPrice(refreshInterval: number) {
+export function useFetchSOLJUPPrice() {
   const isActive = useActivityDetection();
 
   const { data, error, isLoading } = useSWR<HeadPrices[]>(
@@ -14,7 +14,7 @@ export function useFetchSOLJUPPrice(refreshInterval: number) {
       return response.data;
     },
     {
-      refreshInterval: isActive ? refreshInterval : 0,
+      refreshInterval: isActive ? 11000 : 0,
     }
   );
 
@@ -39,7 +39,7 @@ export function useFetchTokenMetadataAndPrice(mint: string) {
       return response.data;
     },
     {
-      refreshInterval: isActive ? 15000 : 0,
+      refreshInterval: isActive ? 16000 : 0,
       revalidateIfStale: true,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
