@@ -4,7 +4,7 @@ import { ThemeModeToggle } from "./ThemeModeToggle"
 export function Header() {
 
     return (
-        <nav className="flex items-center justify-between p-2 border-b">
+        <nav className="flex items-center justify-between pt-1 px-2 border-b">
             <div className="flex items-center gap-2">
                 <Image src="/Welcome.png" alt="logo" width={50} height={50} />
                 <div>
@@ -16,7 +16,6 @@ export function Header() {
             <div className="flex items-center gap-1">
                 <ThemeModeToggle />
             </div>
-
         </nav>
     )
 }
