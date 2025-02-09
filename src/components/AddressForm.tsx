@@ -43,7 +43,6 @@ export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) =
     // const Lockwallet = () => {
     //     console.log("Lock wallet")
     // }
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex items-center space-x-2 mt-4">
