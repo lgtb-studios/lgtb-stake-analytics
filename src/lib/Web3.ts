@@ -15,7 +15,7 @@ export async function getVaults(): Promise<VaultOptions[]> {
     const filteredVaults = responseData.data
       .filter(
         (vault: { current_reward_usd: number }) =>
-          vault.current_reward_usd >= 10000
+          vault.current_reward_usd >= 2500
       )
       .map(
         (vault: {
