@@ -1,6 +1,6 @@
 'use client'
 import { Button } from "@/components/ui/button";
-import { ChevronUp, ChevronDown, Send, Bug, Rss } from "lucide-react";
+import { ChevronUp, ChevronDown, Send, Rss } from "lucide-react";
 import { useRef, useState } from "react";
 import {
     DropdownMenu,
@@ -13,7 +13,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { DialogType } from "@/lib/types";
-import { ReportDialog } from "./ReportDialog";
+// import { ReportDialog } from "./ReportDialog";
 import { SupportDialog } from "./SupportDialog";
 import { FollowDialog } from "./FollowDialog";
 import { Suprise } from "./Suprise";
@@ -70,7 +70,7 @@ export function FloatingActionButton() {
                                     Support
                                 </DropdownMenuItem>
                             </DialogTrigger>
-                            <DialogTrigger asChild>
+                            {/* <DialogTrigger asChild>
 
                                 <DropdownMenuItem onSelect={(e) => {
                                     e.preventDefault();
@@ -79,10 +79,10 @@ export function FloatingActionButton() {
                                     <Bug className="h-4 w-4 mr-2" />
                                     Report Bug
                                 </DropdownMenuItem>
-                            </DialogTrigger>
+                            </DialogTrigger> */}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    {dialogType === 'report' && <ReportDialog />}
+                    {/* {dialogType === 'report' && <ReportDialog />} */}
                     {dialogType === 'support' && <SupportDialog />}
                     {dialogType === 'follow' && <FollowDialog />}
                 </div>
