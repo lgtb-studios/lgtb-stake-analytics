@@ -3,10 +3,9 @@ import { HeadPrices } from "@/lib/types";
 import Image from "next/image";
 import { Card } from "./ui/card";
 import { useEffect, useMemo, useState } from "react";
-import { getSOLJUPPrice } from "@/lib/Web3";
 import { useVault } from "./providers/VaultDataProvider";
 import React from "react";
-import { useActivityDetection } from "@/hooks/useActivityDetection";
+import { useFetchSOLJUPPrice } from "@/hooks/fetchers";
 
 function getPriceChangeColor(currentPrice: string, previousPrice: string) {
     if (!previousPrice) return '';
@@ -19,7 +18,7 @@ export function HeadPriceDisplay() {
     const [prices, setPrices] = useState<HeadPrices[]>([]);
     const [previousPrices, setPreviousPrices] = useState<{ [key: string]: string }>({});
     const { setSolPrice } = useVault();
-    const isActive = useActivityDetection(120000);
+    const { data } = useFetchSOLJUPPrice();
 
     const sortedPrices = useMemo(() =>
         prices?.sort((a, b) => {
@@ -31,31 +30,10 @@ export function HeadPriceDisplay() {
     );
 
     useEffect(() => {
-        const mounted = { current: true };
-        let intervalId: NodeJS.Timeout | null = null;
-
-        const fetchPrices = async () => {
-            if (!isActive) return;
-            try {
-                const priceData = await getSOLJUPPrice();
-                if (mounted.current) {
-                    setPrices(priceData || []);
-                }
-            } catch (error) {
-                console.error('Error fetching prices:', error);
-            }
-        };
-
-        if (isActive) {
-            fetchPrices();
-            intervalId = setInterval(fetchPrices, 5000);
+        if (data) {
+            setPrices(data);
         }
-
-        return () => {
-            mounted.current = false;
-            if (intervalId) clearInterval(intervalId);
-        };
-    }, [isActive]);
+    }, [data]);
 
     useEffect(() => {
         if (sortedPrices?.[0]?.price) {
