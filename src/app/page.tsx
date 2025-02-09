@@ -1,6 +1,6 @@
 'use client'
 import VaultStats from "@/components/vault-analytics/VaultStats";
-import { AddressForm } from "@/components/AddressForm";
+//import { AddressForm } from "@/components/AddressForm";
 import { useEffect, useState } from "react";
 import { getVaults } from "@/lib/Web3";
 import { VaultOptions, VaultSelection } from "@/lib/types";
@@ -12,15 +12,14 @@ export default function Home() {
     selectedVault,
     setSelectedVault,
     walletAddress,
-    setWalletAddress,
     resetWalletData,
     resetWalletAddress
   } = useVault();
   const [vaults, setVaults] = useState<VaultOptions[]>([]);
 
-  const handleAddressSubmit = (address: string) => {
-    setWalletAddress(address);
-  };
+  // const handleAddressSubmit = (address: string) => {
+  //   setWalletAddress(address);
+  // };
 
   const handleVaultSelect = (vault: VaultSelection) => {
     setSelectedVault(vault);
@@ -43,6 +42,7 @@ export default function Home() {
 
   return (
     <div className="w-full p-4">
+
       <div className="w-full max-w-full">
         <VaultStats
           vaultOptions={vaults}
@@ -51,12 +51,12 @@ export default function Home() {
         />
       </div>
 
-      {selectedVault && (
+      {/* {selectedVault && (
         <AddressForm
           onSubmit={handleAddressSubmit}
           label="wallet"
         />
-      )}
+      )} */}
 
       {walletAddress && (
         <WalletStats />

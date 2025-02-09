@@ -70,7 +70,7 @@ export function CopyableSpan({
 }) {
     return (
         <div className="flex items-center p-1 justify-between bg-secondary/50 rounded-lg hover:bg-secondary transition-colors w-full">
-            <span className={`font-mono text-sm truncate ${className}`}>
+            <span className={`font-mono text-sm truncate text-center flex-1 ${className}`}>
                 {value}
             </span>
             <CopyButton value={value} />

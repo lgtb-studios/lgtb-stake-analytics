@@ -1,6 +1,5 @@
 import {
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -13,7 +12,7 @@ export function SupportDialog() {
                 <DialogTitle className="text-xl sm:text-2xl text-center">
                     Support Development & Maintenance
                 </DialogTitle>
-                <DialogDescription asChild>
+                <div>
                     <div className="flex flex-col space-y-4">
                         <p className="text-center text-sm sm:text-base text-muted-foreground">
                             Your contribution helps us continue improving and maintaining this project. If you find our tools valuable, consider supporting us by donating SOL to:
@@ -28,7 +27,7 @@ export function SupportDialog() {
                             Every donation directly supports ongoing development, server costs, and new feature implementation. Thank you for your support!
                         </p>
                     </div>
-                </DialogDescription>
+                </div>
             </DialogHeader>
         </DialogContent>
     );

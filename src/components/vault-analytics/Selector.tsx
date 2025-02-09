@@ -17,6 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useEffect } from 'react'
 
 interface SearchableSelectorProps {
     options: VaultOptions[] | undefined
@@ -42,14 +43,17 @@ export function Selector({
         }
     }
 
-    React.useEffect(() => {
-        if (!isLoading) {
-            setIsSelecting(false);
+    useEffect(() => {
+        if (!isLoading && selectedValue) {
+            const timer = setTimeout(() => {
+                setIsSelecting(false);
+            }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [isLoading]);
+    }, [isLoading, selectedValue]);
 
     return (
-        <Select value={selectedValue} onValueChange={handleSelect} disabled={isSelecting || isLoading}>
+        <Select value={selectedValue} onValueChange={handleSelect} disabled={isSelecting}>
             <div className="flex flex-row items-center justify-between">
                 <SelectTrigger className='pr-2'>
                     <SelectValue placeholder="Select a vault ">
@@ -77,6 +81,8 @@ export function Selector({
                             <SelectItem
                                 key={option.vault_address}
                                 value={option.vault_address}
+                                disabled={option.vault_address === selectedValue}
+                                className={option.vault_address === selectedValue ? "opacity-50 cursor-not-allowed" : ""}
                             >
                                 <div className="flex items-center justify-between">
                                     <span>{option.token_a_symbol}</span>

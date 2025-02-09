@@ -1,6 +1,5 @@
 import {
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -15,7 +14,7 @@ export function FollowDialog() {
                 <DialogTitle className="text-xl sm:text-2xl text-center">
                     Join The Duck Pond!
                 </DialogTitle>
-                <DialogDescription className="space-y-4">
+                <div className="space-y-4">
                     <div className="flex flex-col space-y-4">
                         <p className="text-center text-sm sm:text-base text-muted-foreground">
                             Keep up with the flock - get the latest $LGTB updates first!
@@ -34,11 +33,7 @@ export function FollowDialog() {
                             Waddle in and make some waves!
                         </p>
                     </div>
-
-
-
-
-                </DialogDescription>
+                </div>
 
             </DialogHeader>
         </DialogContent>

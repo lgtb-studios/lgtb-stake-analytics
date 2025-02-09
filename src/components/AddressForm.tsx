@@ -43,10 +43,9 @@ export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) =
     // const Lockwallet = () => {
     //     console.log("Lock wallet")
     // }
-
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex space-x-2 mt-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex items-center space-x-2 mt-4">
                 <FormField
                     control={form.control}
                     name="address"
@@ -56,14 +55,14 @@ export function AddressForm({ onSubmit, label }: { onSubmit: (address: string) =
                                 <Input
                                     placeholder={`Enter ${label} address`}
                                     {...field}
-                                    className="h-9 text-theme-color"
+                                    className="h-10 text-theme-color"
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="h-9">Check</Button>
+                <Button type="submit" className="h-10">Check</Button>
                 {/* <div className='h-10'>
                     <p className='text-xs text-center font-bold'>Lock</p>
                     <Switch checked onCheckedChange={Lockwallet} />
