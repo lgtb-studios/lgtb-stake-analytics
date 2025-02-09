@@ -14,6 +14,7 @@ import { useActivityDetection } from "@/hooks/useActivityDetection";
 import { PercentChart } from "../charts/PercentChart";
 import { ImageSkeleton } from "../skeletons/ImageSkeleton";
 import { useFetchTokenMetadataAndPrice } from "@/hooks/fetchers";
+import { AddressForm } from "../AddressForm";
 
 interface VaultStatsProps {
     vaultOptions: VaultOptions[] | undefined;
@@ -25,12 +26,16 @@ export default function VaultStats({
     onVaultSelect,
     selectedVault,
 }: VaultStatsProps) {
-    const { tokenData, setTokenData, vaultData, setVaultData } = useVault();
+    const { tokenData, setTokenData, vaultData, setVaultData, setWalletAddress } = useVault();
     const [previousValue, setPreviousValue] = useState<number | null>(null);
     const { data, isLoading } = useFetchTokenMetadataAndPrice(vaultData?.token_a_mint || '');
     const [lastCheckedPrice, setLastCheckedPrice] = useState<number | null>(null);
     const isActive = useActivityDetection(120000);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    const handleAddressSubmit = (address: string) => {
+        setWalletAddress(address);
+    };
 
     useEffect(() => {
         if (!selectedVault) return;
@@ -149,6 +154,12 @@ export default function VaultStats({
                     isLoading={isLoading}
                 />
             </div>
+            {selectedVault && (
+                <AddressForm
+                    onSubmit={handleAddressSubmit}
+                    label="wallet"
+                />
+            )}
 
             {selectedVault && (isInitialLoad || isLoading ? (
                 <div>Loading...</div>
