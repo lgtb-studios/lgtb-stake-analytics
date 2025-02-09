@@ -22,24 +22,34 @@ interface SearchableSelectorProps {
     options: VaultOptions[] | undefined
     placeholder?: string
     onSelect: (value: VaultSelection) => void
+    isLoading?: boolean
 }
 
 export function Selector({
     options = [],
-    onSelect
+    onSelect,
+    isLoading = false,
 }: SearchableSelectorProps) {
-    const [selectedValue, setSelectedValue] = React.useState('')
+    const [selectedValue, setSelectedValue] = React.useState('');
+    const [isSelecting, setIsSelecting] = React.useState(false)
 
     const handleSelect = (value: string) => {
         const selectedOption = options.find(opt => opt.vault_address === value);
         if (selectedOption) {
+            setIsSelecting(true);
             setSelectedValue(value);
             onSelect(selectedOption);
         }
     }
 
+    React.useEffect(() => {
+        if (!isLoading) {
+            setIsSelecting(false);
+        }
+    }, [isLoading]);
+
     return (
-        <Select value={selectedValue} onValueChange={handleSelect}>
+        <Select value={selectedValue} onValueChange={handleSelect} disabled={isSelecting || isLoading}>
             <div className="flex flex-row items-center justify-between">
                 <SelectTrigger className='pr-2'>
                     <SelectValue placeholder="Select a vault ">

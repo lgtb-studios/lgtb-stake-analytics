@@ -146,6 +146,7 @@ export default function VaultStats({
                     options={vaultOptions}
                     placeholder="Select an option"
                     onSelect={onVaultSelect}
+                    isLoading={isLoading}
                 />
             </div>
 
