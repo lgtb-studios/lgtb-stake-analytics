@@ -15,6 +15,7 @@ export function useFetchSOLJUPPrice() {
     },
     {
       refreshInterval: isActive ? 11000 : 0,
+      revalidateIfStale: true,
     }
   );
 
