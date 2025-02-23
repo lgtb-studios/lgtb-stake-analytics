@@ -8,12 +8,6 @@ export async function GET() {
     console.log("Making SOL/JUP request...");
     const response = await LgtbClient.get<HeadPrices[]>(PRICES_SOLJUP_API);
 
-    console.log("Raw response:", {
-      status: response.status,
-      data: response.data,
-      headers: response.headers,
-    });
-
     // Verify data structure before returning
     if (!Array.isArray(response.data)) {
       console.warn("Response data is not an array:", response.data);

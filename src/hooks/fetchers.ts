@@ -1,4 +1,4 @@
-import { ESCROW, PRICES, PRICES_SOLJUP } from "@/lib/routes";
+import { ESCROW, PRICES, PRICES_SOLJUP, STAKE_API } from "@/lib/routes";
 import { HeadPrices, VaultSelection } from "@/lib/types";
 import useSWR, { mutate } from "swr";
 import axios from "axios";
@@ -82,6 +82,31 @@ export function useFetchWalletEscrowData(
   return {
     data,
     isLoading,
+    error,
+  };
+}
+
+export function useFetchStakePercentages() {
+  const isActive = useActivityDetection();
+  const { data, error, isLoading } = useSWR(
+    isActive ? STAKE_API : null,
+    async () => {
+      const response = await axios.get(STAKE_API);
+      return response.data;
+    },
+    {
+      revalidateOnFocus: true,
+      revalidateOnMount: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      refreshInterval: 0,
+      dedupingInterval: 0,
+    }
+  );
+
+  return {
+    data,
+    isLoading: isLoading && isActive,
     error,
   };
 }

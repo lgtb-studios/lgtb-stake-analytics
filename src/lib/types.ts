@@ -83,3 +83,14 @@ export interface TokenMetadata {
   tokenPrice: number;
   holderCount: number;
 }
+
+export interface PercentageData {
+  id: string;
+  stakeVaultId: string;
+  percentage: string;
+  totalStaked: string;
+  ongoingPartialUnstake: string;
+  totalSupply: string;
+  totalStakers: number;
+  timestamp: string;
+}
