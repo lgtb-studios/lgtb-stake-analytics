@@ -7,3 +7,4 @@ export const ESCROW = "/api/escrow";
 export const PRICES_API = "/api/token-data";
 export const PRICES_SOLJUP_API = "/api/prices/sol-jup";
 export const ESCROW_API = "/api/escrow-data";
+export const STAKE_API = "/api/stake-percentage";
